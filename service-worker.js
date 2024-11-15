@@ -5,10 +5,11 @@ const urlsToCache = [
     '/manifest.json',
     '/multiplier_data.json',
     '/app.js',
-    '/image/icon2.png',
+    '/credit.png',
     '/styles.css'
 ];
 
+// Install event - Cache necessary resources
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -16,25 +17,37 @@ self.addEventListener('install', event => {
     );
 });
 
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => response || fetch(event.request))
+// Activate event - Cleanup old caches
+self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME];
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (!cacheWhitelist.includes(cacheName)) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
     );
 });
 
+// Fetch event - Network first, then cache if not available
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // If the request is successful, clone it and store it in the cache
-        const clonedResponse = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clonedResponse));
-        return response;
-      })
-      .catch(() => {
-        // If the network request fails, serve the cached resource instead
-        return caches.match(event.request);
-      })
-  );
+    event.respondWith(
+        fetch(event.request)
+            .then(response => {
+                // Only cache the response if it's a valid request (to avoid caching non-cacheable content like images or POST requests)
+                if (event.request.url.includes('http')) {
+                    const clonedResponse = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clonedResponse));
+                }
+                return response;
+            })
+            .catch(() => {
+                // If network fails, fallback to cache
+                return caches.match(event.request);
+            })
+    );
 });
