@@ -5,17 +5,28 @@
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif;
 }
+
 body {
     background: #f4f7fa;
     color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
 }
 
-/* Container styling */
+/* Wrapper styling for centering container */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1; /* Allows wrapper to take up remaining space */
+    width: 100%;
+}
+
+/* Main container styling */
 .container {
     background: #ffffff;
     max-width: 500px;
@@ -25,6 +36,8 @@ body {
     box-shadow: 1px 4px 20px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
+
+/* Header styling */
 h1 {
     font-weight: 700;
     font-size: 1.8rem;
@@ -40,6 +53,7 @@ label {
     margin: 1rem 0 0.5rem;
     text-align: left;
 }
+
 select, input[type="text"] {
     width: 100%;
     padding: 12px 15px;
@@ -50,6 +64,7 @@ select, input[type="text"] {
     background: #f9f9f9;
     transition: all 0.3s ease;
 }
+
 select:focus, input[type="text"]:focus {
     outline: none;
     border-color: #0044cc;
@@ -70,10 +85,12 @@ button {
     transition: background-color 0.3s ease, transform 0.2s ease;
     width: 100%;
 }
+
 button:hover {
     background-color: #003bb3;
     transform: translateY(-2px);
 }
+
 button:active {
     background-color: #003299;
     transform: translateY(0);
@@ -88,6 +105,7 @@ button:active {
     border-radius: 8px;
     text-align: left;
 }
+
 .output p {
     font-size: 0.95rem;
     margin: 0.5rem 0;
@@ -96,25 +114,26 @@ button:active {
 
 /* Footer styling */
 footer {
-    margin-top: 2rem;
-    padding: 1rem;
     width: 100%;
     background: #ffffff;
     color: black;
     text-align: center;
     font-size: 1rem;
     border-radius: 10px;
-    position: fixed;
-    bottom: 0;
+    padding: 1rem;
+    margin-top: 20px;
 }
+
 footer p {
     margin: 0;
 }
+
 footer h6 {
     text-align: left;
-    font-weight: normal
+    font-weight: normal;
 }
+
 footer h6 strong {
     text-align: left;
-    font-weight: bold
+    font-weight: bold;
 }

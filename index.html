@@ -16,21 +16,23 @@
     
 </head>
 <body>
-    <div class="container">
-        <h1>CrediQuest Alpha 0.1</h1>
+    <div class="wrapper">
+        <div class="container">
+            <h1>CrediQuest Alpha 0.1</h1>
 
-        <label for="subcategory">Enter Store Name:</label>
-        <input type="text" id="subcategory" placeholder="Enter store name" oninput="clearCategory()">
+            <label for="subcategory">Enter Store Name:</label>
+            <input type="text" id="subcategory" placeholder="Enter store name" oninput="clearCategory()">
 
-        <label for="category">Select Reward Category:</label>
-        <select id="category" onchange="clearSubcategory()">
-            <option value="">--Select Reward Category--</option>
-            <!-- Categories will be dynamically populated -->
-        </select>
+            <label for="category">Select Reward Category:</label>
+            <select id="category" onchange="clearSubcategory()">
+                <option value="">--Select Reward Category--</option>
+                <!-- Categories will be dynamically populated -->
+            </select>
 
-        <button onclick="findMultiplier()">Find Card to Use</button>
+            <button onclick="findMultiplier()">Find Card to Use</button>
 
-        <div id="output" class="output"></div>
+            <div id="output" class="output"></div>
+        </div>
     </div>
     
     <!-- Footer -->
