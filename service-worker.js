@@ -1,8 +1,12 @@
-const CACHE_NAME = 'hello-world-cache-v1';
+const CACHE_NAME = 'crediquest-alpha-0.1-cache-v1';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/manifest.json'
+    '/manifest.json',
+    '/multiplier_data.json',
+    '/app.js',
+    '/image/icon2.png',
+    '/styles.css'
 ];
 
 self.addEventListener('install', event => {

@@ -1,0 +1,112 @@
+/* General reset and styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+body {
+    background: #f4f7fa;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container styling */
+.container {
+    background: #ffffff;
+    max-width: 500px;
+    width: 100%;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 1px 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #0044cc;
+    margin-bottom: 1rem;
+}
+
+/* Input and select styling */
+label {
+    display: block;
+    font-weight: 500;
+    color: #555;
+    margin: 1rem 0 0.5rem;
+    text-align: left;
+}
+select, input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f9f9f9;
+    transition: all 0.3s ease;
+}
+select:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: #0044cc;
+    box-shadow: 0 0 8px rgba(0, 68, 204, 0.2);
+    background: #ffffff;
+}
+
+/* Button styling */
+button {
+    background-color: #0044cc;
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%;
+}
+button:hover {
+    background-color: #003bb3;
+    transform: translateY(-2px);
+}
+button:active {
+    background-color: #003299;
+    transform: translateY(0);
+}
+
+/* Output box styling */
+.output {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f1f6fc;
+    border-left: 4px solid #0044cc;
+    border-radius: 8px;
+    text-align: left;
+}
+.output p {
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+    color: #333;
+}
+
+/* Footer styling */
+footer {
+    margin-top: 2rem;
+    padding: 1rem;
+    width: 100%;
+    background: #ffffff;
+    color: black;
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 10px;
+    position: fixed;
+    bottom: 0;
+}
+footer p {
+    margin: 0;
+}

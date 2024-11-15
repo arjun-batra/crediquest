@@ -1,5 +1,5 @@
 {
-    "name": "CrediQuest Hello World",
+    "name": "CrediQuest Alpha 0.1",
     "short_name": "CrediQuest",
     "start_url": "/crediquest/index.html",
     "display": "standalone",
@@ -7,7 +7,7 @@
     "theme_color": "#ffffff",
     "icons": [
         {
-            "src": "icon.png",
+            "src": "image/icon2.png",
             "sizes": "192x192",
             "type": "image/png"
         }
