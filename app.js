@@ -113,3 +113,4 @@ document.getElementById("subcategory").addEventListener("input", function() {
 document.getElementById("category").addEventListener("change", function() {
     document.getElementById("subcategory").value = ""; // Clear subcategory input
 });
+
