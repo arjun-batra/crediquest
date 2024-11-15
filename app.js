@@ -1,4 +1,4 @@
-// Registering Service Worker
+/*/ Registering Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
@@ -9,7 +9,16 @@ if ('serviceWorker' in navigator) {
                 console.error('Service Worker registration failed:', error);
             });
     });
-}       
+}
+*/
+//Unregistering Service Worker
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        registrations.forEach(function(registration) {
+            registration.unregister();
+        });
+    });
+}
 
 let categoriesData = [];
 
