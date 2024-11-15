@@ -7,7 +7,7 @@
     "theme_color": "#ffffff",
     "icons": [
         {
-            "src": "image/credit.png",
+            "src": "credit.png",
             "sizes": "512x512",
             "type": "image/png"
         }
