@@ -1,4 +1,4 @@
-/*/ Registering Service Worker
+// Registering Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
@@ -8,15 +8,6 @@ if ('serviceWorker' in navigator) {
             .catch(error => {
                 console.error('Service Worker registration failed:', error);
             });
-    });
-}
-*/
-//Unregistering Service Worker
-if (navigator.serviceWorker) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        registrations.forEach(function(registration) {
-            registration.unregister();
-        });
     });
 }
 
@@ -139,10 +130,24 @@ window.addEventListener("click", function(event) {
     }
 });
 
+// Event listener for 'Enter' key to trigger findMultiplier
+document.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        findMultiplier(); // Trigger the findMultiplier function
+    }
+});
 
+// Event listener to clear category dropdown when typing in subcategory
+document.getElementById("subcategory").addEventListener("input", function() {
+    document.getElementById("category").value = ""; // Clear category selection
+});
 
+// Event listener to clear subcategory input when selecting a category
+document.getElementById("category").addEventListener("change", function() {
+    document.getElementById("subcategory").value = ""; // Clear subcategory input
+});
 
-// Function to format multiplier text
+// Helper function to format multiplier text
 function formatMultiplierText(multiplierObj) {
     if (multiplierObj.Multiplier === null) {
         return `${multiplierObj.Card}: Multiplier Unknown`;
@@ -158,20 +163,3 @@ function sortMultipliers(multipliers) {
     }));
     return sorted.sort((a, b) => b.Multiplier - a.Multiplier);
 }
-
-// Event listener for 'Enter' key to trigger findMultiplier
-document.addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-        findMultiplier();
-    }
-});
-
-// Event listener to clear category dropdown when typing in subcategory
-document.getElementById("subcategory").addEventListener("input", function() {
-    document.getElementById("category").value = ""; // Clear category selection
-});
-
-// Event listener to clear subcategory input when selecting a category
-document.getElementById("category").addEventListener("change", function() {
-    document.getElementById("subcategory").value = ""; // Clear subcategory input
-});
