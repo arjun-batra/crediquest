@@ -1,60 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CrediQuest Alpha 0.2</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Link to CSS file -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrediQuest Alpha 0.3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Aptos:wght@500&family=Roboto:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Link to Manifest file -->
-    <link rel="manifest" href="manifest.json">
-    
 </head>
+
 <body>
-    <div class="wrapper">
-        <div class="container">
-            <h1>CrediQuest Alpha 0.2</h1>
 
-            <label for="subcategory">Enter Store Name:</label>
-            <input type="text" id="subcategory" placeholder="Enter store name" oninput="clearCategory()">
+    <!-- Navigation Bar -->
+    <nav class="top-nav">
+        <a href="#home" class="nav-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/home.png" alt="Home" />
+            Home
+        </a>
+        <a href="#contribute" class="nav-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/feedback.png" alt="Contribute" />
+            Contribute
+        </a>
+        <a href="#about" class="nav-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/info.png" alt="About" />
+            About
+        </a>
+    </nav>
 
-            <label for="category">Select Reward Category:</label>
-            <select id="category" onchange="clearSubcategory()">
-                <option value="">--Select Reward Category--</option>
-                <!-- Categories will be dynamically populated -->
-            </select>
+    <!-- Main Content Container -->
+    <div class="content-wrapper">
+        <div class="main-container">
+            <h1>CrediQuest Alpha 0.3</h1>
 
-            <button onclick="findMultiplier()">Find Card to Use</button>
+            <div class="instruction">
+                <p>Please enter a store name or select a reward type to search.</p>
+            </div>
 
-            <div id="output" class="output"></div>
+            <div class="search-section">
+                <label for="store-name">Enter Store Name</label>
+                <input type="text" id="store-name" placeholder="Search for a store" />
+
+                <label for="reward-type">Select Reward Type</label>
+                <select id="reward-type">
+                    <option value="">Select a reward type</option>
+                    <option value="cashback">Cashback</option>
+                    <option value="points">Points</option>
+                </select>
+
+                <button id="search-button">Find Card to Use</button>
+            </div>
         </div>
     </div>
-
-    <!-- Modal HTML structure -->
-    <div id="storeModal" class="modal-overlay">
-        <div class="modal-content">
-            <span id="closeBtn" class="close-btn">×</span>
-            <h2 id="storeName"></h2>
-            <div id="modalDetails"></div>
-        </div>
-    </div>
-
-
 
     <!-- Footer -->
     <footer>
         <p>Made with ♥️ by Arjun</p>
-        <h6><strong>Disclaimer:</strong></h6>
-        <h6>The information provided in this application is for general informational purposes only. All trademarks, including merchant names and credit card brand names, are the property of their respective owners. This application is not affiliated with, endorsed by, or sponsored by any of the merchants or credit card issuers listed herein.</h6>
-        <h6>The data and content provided are intended to assist users with understanding rewards programs and related services but should not be considered as professional advice. Please verify all information directly with the respective merchants or credit card issuers for the most accurate and up-to-date details.</h6>
+        <h6><strong>Disclaimer:</strong><br>The information provided in this application is for general informational purposes only. All trademarks, including merchant names and credit card brand names, are the property of their respective owners. This application is not affiliated with, endorsed by, or sponsored by any of the merchants or credit card issuers listed herein.<br>
+            The data and content provided are intended to assist users with understanding rewards programs and related services but should not be considered as professional advice. Please verify all information directly with the respective merchants or credit card issuers for the most accurate and up-to-date details.</h6>
     </footer>
 
-    <!-- Link to JavaScript file -->
     <script src="app.js"></script>
 </body>
+
 </html>
