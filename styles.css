@@ -1,122 +1,226 @@
-/* General reset and styling */
-* {
+/* Global Styles */
+body {
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Roboto', sans-serif;
-}
-
-body {
-    background: #f4f7fa;
-    color: #333;
-    min-height: 100vh;
+    background-color: #f7f7f7;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 20px;
+    min-height: 100vh;
 }
 
-/* Wrapper styling for centering container */
-.wrapper {
+h1 {
+    font-family: 'Aptos', sans-serif;
+    font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Navigation Bar */
+.top-nav {
+    background-color: #333;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-item {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-item img {
+    margin-right: 8px;
+}
+
+.nav-item:hover {
+    background-color: #555;
+    border-radius: 5px;
+}
+
+/* Content Wrapper */
+.content-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-grow: 1; /* Allows wrapper to take up remaining space */
-    width: 100%;
+    flex-grow: 1;
+    padding: 20px;
 }
 
-/* Main container styling */
-.container {
-    background: #ffffff;
-    max-width: 500px;
+/* Main Container */
+.main-container {
+    max-width: 800px;
     width: 100%;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 1px 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
+    margin: 0 auto;
 }
 
-/* Header styling */
-h1 {
-    font-weight: 700;
-    font-size: 1.8rem;
-    color: #0044cc;
-    margin-bottom: 1rem;
-}
-
-/* Input and select styling */
-label {
-    display: block;
-    font-weight: 500;
+.instruction {
+    font-size: 1.1em;
+    margin-bottom: 15px;
     color: #555;
-    margin: 1rem 0 0.5rem;
-    text-align: left;
 }
 
-select, input[type="text"] {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    background: #f9f9f9;
-    transition: all 0.3s ease;
+/* Search Section */
+.search-section {
+    margin-bottom: 20px;
 }
 
-select:focus, input[type="text"]:focus {
-    outline: none;
-    border-color: #0044cc;
-    box-shadow: 0 0 8px rgba(0, 68, 204, 0.2);
-    background: #ffffff;
+.search-section label {
+    display: block;
+    font-size: 1.2em;
+    margin-bottom: 8px;
 }
 
-/* Button styling */
+.search-section input,
+.search-section select {
+    width: 80%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+/* Button */
 button {
-    background-color: #0044cc;
-    color: #fff;
-    padding: 12px 20px;
-    font-size: 1rem;
-    font-weight: 500;
+    background-color: #000000;
+    color: white;
+    padding: 15px 32px;
+    font-size: 1.2em;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    width: 100%;
 }
 
 button:hover {
-    background-color: #003bb3;
-    transform: translateY(-2px);
+    background-color: #555;
 }
 
-button:active {
-    background-color: #003299;
-    transform: translateY(0);
+/* Style for the modal */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
 }
 
-/* Output box styling */
-.output {
-    margin-top: 2rem;
-    padding: 1rem;
-    background-color: #f1f6fc;
-    border-left: 4px solid #0044cc;
-    border-radius: 8px;
-    text-align: left;
+/* Modal content box */
+.modal-content {
+    background-color: white;
+    margin: 15% auto; /* Center the modal */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Adjust the width */
+    max-width: 500px; /* Max width of modal */
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
-.output p {
-    font-size: 0.95rem;
-    margin: 0.5rem 0;
-    color: #333;
+/* The close button inside the modal */
+.modal-close {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.modal-close:hover {
+    background-color: #555;
+}
+
+/* Settings Select All Button */
+#settings-select-all-button {
+    padding: 10px 20px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#settings-select-all-button:hover {
+    background-color: #555;
+}
+
+/* Styling for checkboxes and labels */
+#selected-cards-container {
+    margin: 20px 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Each card item container */
+#selected-cards-container div {
+    margin-bottom: 15px;
+    display: flex; /* Use flexbox to align checkbox and label */
+    align-items: center; /* Vertically center the checkbox with the label */
+    justify-content: flex-start;
+}
+
+/* Custom checkbox style */
+input[type="checkbox"] {
+    appearance: none; /* Remove default styling */
+    -webkit-appearance: none; /* For Safari */
+    -moz-appearance: none; /* For Firefox */
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    transition: background-color 0.3s, border-color 0.3s;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* Styling when checkbox is checked */
+input[type="checkbox"]:checked {
+    background-color: #000000;
+    border-color: #000000;
+}
+
+/* Creating checkmark for the checkbox when selected */
+input[type="checkbox"]:checked::before {
+    content: "✔";
+    color: white;
+    font-size: 14px;
+    position: relative;
+    top: 2px;
+    left: 5px;
+}
+
+/* Label style */
+label {
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
 }
 
 /* Footer styling */
 footer {
     width: 100%;
-    background: #ffffff;
-    color: black;
+    background: #000000;
+    color: white;
     text-align: center;
     font-size: 1rem;
     border-radius: 10px;
@@ -130,65 +234,114 @@ footer p {
 
 footer h6 {
     text-align: left;
-    font-weight: normal;
 }
 
-footer h6 strong {
-    text-align: left;
-    font-weight: bold;
+/* Responsive Styles */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2em;
+    }
+
+    .main-container {
+        width: 90%; /* Make content container smaller on mobile */
+        margin: 10px;
+    }
+
+    .search-section input,
+    .search-section select {
+        width: 90%;
+    }
+
+    footer {
+        font-size: 0.6em;
+    }
+
+    .top-nav {
+        padding: 12px 0;
+    }
+
+    .nav-item {
+        font-size: 14px;
+    }
 }
 
-/* Store card styling */
-.store-card {
-    background: #ffffff;
-    padding: 1rem;
-    margin: 1rem 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.store-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-}
-
-/* Full-screen overlay style */
-.modal-overlay {
-    display: none;
+/* Orientation Warning */
+#orientation-warning {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);  /* Semi-transparent black background */
-    z-index: 9999;  /* Make sure the modal is on top of everything */
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+    display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000; /* Above all other elements */
 }
 
-/* Modal content box */
-.modal-content {
-    background: #ffffff;
+.orientation-message {
+    text-align: center;
+    color: white;
     padding: 20px;
-    border-radius: 8px;
-    position: relative;
-    max-width: 500px;
-    width: 90%;
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly opaque box */
+    border-radius: 10px;
 }
 
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1.5rem;
-    cursor: pointer;
+.orientation-message h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.orientation-message p {
+    font-size: 1.2em;
+}
+
+/* Badge Layout */
+.badge {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #ccc;
+    border-radius: 8px;
+    margin: 5px 0;
+    font-size: 14px;
     color: #333;
 }
 
-/* The rest of the modal content styles */
-.modal-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
+.badge .multiplier {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Style the badges inside the store selection modal to look like buttons */
+#store-selection-modal .badge {
+    display: inline-block;
+    padding: 10px 15px;
+    margin-right: 5px;
+    background-color: #333; /* Blue background */
+    color: white;
+    border-radius: 5px;
+    border: 1px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s ease;
+    font-size: 16px;
+
+}
+
+/* Hover effect */
+#store-selection-modal .badge:hover {
+    background-color: #555;
+}
+
+/* Active effect on click (simulating a button press) */
+#store-selection-modal .badge:active {
+    background-color: #000000;
+    transform: scale(0.98); /* Slight shrink effect to mimic button press */
+}
+
+/* Optional: Adding some accessibility for keyboard navigation */
+#store-selection-modal .badge:focus {
+    outline: 3px solid #0056b3;
 }

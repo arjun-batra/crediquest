@@ -1,60 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CrediQuest Alpha 0.2</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Link to CSS file -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrediQuest Alpha 0.3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Aptos:wght@500&family=Roboto:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Link to Manifest file -->
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="manifest" href="manifest.json">
-    
+    <!-- iOS splash screen icons -->
+    <link rel="apple-touch-icon" sizes="500x500" href="icons/icon-500x500.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
+
 <body>
-    <div class="wrapper">
-        <div class="container">
-            <h1>CrediQuest Alpha 0.2</h1>
 
-            <label for="subcategory">Enter Store Name:</label>
-            <input type="text" id="subcategory" placeholder="Enter store name" oninput="clearCategory()">
+    <!-- Navigation Bar -->
+    <nav class="top-nav">
+        <a href="javascript:void(0);" id="contribute-btn" class="nav-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/feedback.png" alt="Contribute" />
+            Contribute
+        </a>
+        <a href="javascript:void(0);" id="about-btn" class="nav-item">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/info.png" alt="About" />
+            About
+        </a>
+        <a href="#" class="nav-item" id="settings-btn">
+            <img src="https://img.icons8.com/material-outlined/24/ffffff/settings.png" alt="Settings" />
+            Settings
+        </a>
+    </nav>
 
-            <label for="category">Select Reward Category:</label>
-            <select id="category" onchange="clearSubcategory()">
-                <option value="">--Select Reward Category--</option>
-                <!-- Categories will be dynamically populated -->
-            </select>
+    <!-- Main Content Container -->
+    <div class="content-wrapper">
+        <div class="main-container">
+            <h1>CrediQuest Alpha 0.3</h1>
 
-            <button onclick="findMultiplier()">Find Card to Use</button>
+            <div class="instruction">
+                <p>Please enter a store name or select a reward type to search.</p>
+            </div>
 
-            <div id="output" class="output"></div>
+            <!-- Search Section -->
+            <div class="search-section">
+                <label for="store-name">Enter Store Name</label>
+                <input type="text" id="store-name" placeholder="Search for a store" />
+
+                <label for="reward-type">Select Reward Category</label>
+                <select id="reward-type">
+                    <!-- Reward types will be dynamically loaded -->
+                </select>
+
+                <button id="search-button">Find Card to Use</button>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" style="display:none;">Loading...</div>
+
+            <!-- Cards Display -->
+            <div id="card-display-container"></div>
         </div>
     </div>
 
-    <!-- Modal HTML structure -->
-    <div id="storeModal" class="modal-overlay">
-        <div class="modal-content">
-            <span id="closeBtn" class="close-btn">×</span>
-            <h2 id="storeName"></h2>
-            <div id="modalDetails"></div>
+    <!-- About Modal -->
+    <div id="about-modal" class="modal" style="display:none;">
+        <div id="about-modal-content" class="modal-content">
+            <h2>About This App</h2>
+            <p>This is a personal app built for learning purposes, where users can search for cards based on store names and reward types.</p>
+            <button id="about-modal-close" class="modal-close">Close</button>
         </div>
     </div>
 
+    <!-- Contribute Modal -->
+    <div id="contribute-modal" class="modal" style="display:none;">
+        <div id="contribute-modal-content" class="modal-content">
+            <h2>Contribute to the Project</h2>
+            <p>If you'd like to contribute to this project, please reach out to us or fork the repository on GitHub.</p>
+            <button id="contribute-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>    
+    
+    <!-- Settings Modal for Customization -->
+    <div id="settings-modal" class="modal" style="display:none;">
+        <div id="settings-modal-content" class="modal-content">
+            <h2>Customize Your Card Selection</h2>            
+            <div id="selected-cards-container">
+                <!-- User's selected cards checkboxes will go here -->
+            </div>
+            <button id="settings-select-all-button">Select All</button>
+            <button id="settings-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>
 
-
+    <!-- Modal structure -->
+    <div id="instruction-modal" class="modal" style="display: none;">
+        <div id="instructions-modal-content" class="modal-content">
+            <!-- Instructions for when user doesn't select reward category or enter store name -->
+            <div id="instruction" style="display: none;"></div>
+            <button id="instruction-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>
+    <div id="card-reward-modal" class="modal" style="display: none;">
+        <div id="card-reward-modal-content" class="modal-content">
+            <h2 id="reward-category-store-name"></h2> <!-- Reward category name -->
+            <div id="card-list" style="display: block">
+                <span></span><!-- List of cards with multipliers will go here -->
+            </div>
+            <button id="card-reward-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>
+    <div id="store-selection-modal" class="modal" style="display: none;">
+        <div id="store-selection-modal-content" class="modal-content">
+            <div id="store-list" style="display: block">
+                <span></span><!-- List of stores will go here -->
+            </div>
+            <button id="store-selection-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>    
+    
+    <!-- Landscape mode warning -->
+    <div id="orientation-warning" style="display: none;">
+        <div class="orientation-message">
+            <h1>Please Rotate Your Device</h1>
+            <p>This application works best in portrait mode.</p>
+        </div>
+    </div>
+    
     <!-- Footer -->
     <footer>
         <p>Made with ♥️ by Arjun</p>
-        <h6><strong>Disclaimer:</strong></h6>
-        <h6>The information provided in this application is for general informational purposes only. All trademarks, including merchant names and credit card brand names, are the property of their respective owners. This application is not affiliated with, endorsed by, or sponsored by any of the merchants or credit card issuers listed herein.</h6>
-        <h6>The data and content provided are intended to assist users with understanding rewards programs and related services but should not be considered as professional advice. Please verify all information directly with the respective merchants or credit card issuers for the most accurate and up-to-date details.</h6>
+        <h6><strong>Disclaimer:</strong><br>The information provided in this application is for general informational purposes only. All trademarks, including merchant names and credit card brand names, are the property of their respective owners. This application is not affiliated with, endorsed by, or sponsored by any of the merchants or credit card issuers listed herein.<br>
+        The data and content provided are intended to assist users with understanding rewards programs and related services but should not be considered as professional advice. Please verify all information directly with the respective merchants or credit card issuers for the most accurate and up-to-date details.</h6>
     </footer>
 
-    <!-- Link to JavaScript file -->
+    <!-- Custom JS -->
     <script src="app.js"></script>
+
 </body>
+
 </html>
