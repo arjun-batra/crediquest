@@ -138,7 +138,10 @@ document.getElementById('settings-select-all-button').addEventListener('click', 
     // Update button text
     const selectAllButton = document.getElementById('settings-select-all-button');
     selectAllButton.textContent = allSelected ? 'Select All' : 'Deselect All';
+    console.log(allSelected ? 'All checkboxes deselected.' : 'All checkboxes selected.');
+    console.log('Updated Selected Cards:', selectedCardIds);
     saveSelectedCards();
+    console.log('Selected Cards:', selectedCardIds);
 });
 // Handling selection or deselection of credit card
 function handleCardSelection(event) {
@@ -152,6 +155,7 @@ function handleCardSelection(event) {
     }
     // Save the updated selection to local storage
     saveSelectedCards();
+    console.log('Selected Cards:', selectedCardIds);
 }
 // Save selected cards to local storage
 function saveSelectedCards() {
@@ -164,10 +168,13 @@ function loadSelectedCards() {
     if (savedCards) {
         // If there are saved cards, load them
         selectedCardIds = JSON.parse(savedCards);
+        console.log('Saved Selected Cards:', selectedCardIds);
     } else {
         // If no saved cards exist, select all cards by default
+        console.log('No saved cards found. Selecting all cards by default.');
         selectedCardIds = []; // Clear any previous selections
         const checkboxes = document.querySelectorAll('#selected-cards-container input[type="checkbox"]');
+        
         checkboxes.forEach(checkbox => {
             checkbox.checked = true; // Check all checkboxes
             selectedCardIds.push(checkbox.value); // Add all card IDs to the selectedCardIds array
@@ -232,7 +239,7 @@ function handleInputAndDropdown() {
     });
 }
 
-// Function for Find Card to Use button
+// Function to find and log the saved cards associated with the selected reward type
 async function findCardToUse() {
     // Get the selected reward type from the dropdown and store name
     const rewardDropdown = document.getElementById('reward-type');
@@ -254,8 +261,20 @@ async function findCardToUse() {
         });
         return;
     }
+    // Retrieve the saved card IDs from localStorage
+    const savedCards = JSON.parse(localStorage.getItem('selectedCards')) || [];
     if(selectedRewardId){
         try {
+            // Fetch the card details for all saved cards from the database
+            const { data, error } = await supabase
+                .from('credit_card_reward_types')
+                .select('credit_card_id, reward_type_id, multiplier, credit_cards(card_name)')
+                .in('credit_card_id', savedCards) // Fetch only the saved cards by their IDs
+                .order('multiplier', { ascending: false });
+            if (error) {
+                console.error('Error fetching cards:', error);
+                return;
+            }
             // Get the reward category name from the 'reward_types' table
             const { data: rewardData, error: rewardError } = await supabase
                 .from('reward_types')
@@ -266,9 +285,42 @@ async function findCardToUse() {
                 console.error('Error fetching reward category:', rewardError);
                 return;
             }
-            const rewardName = rewardData.reward_type;
-            // Sending data to populate card reward modal
-            cardRewardModal(selectedRewardId, rewardName);
+            // Update the modal with the reward category/store name
+            document.getElementById('reward-category-store-name').textContent = rewardData.reward_type;
+            // Get the modal and list elements
+            const cardList = document.getElementById('card-list');
+            cardList.innerHTML = '';  // Clear any existing content in the list
+            // Filter the cards based on the selected reward type and log their multiplier
+            const cardsToUse = data.filter(card => card.reward_type_id === Number(selectedRewardId));
+            if (cardsToUse.length === 0) {
+                cardList.innerHTML = '<p>Please select at least one credit card in the settings (top right) to view its multiplier value.</p>';  // User needs to select atleast one card 
+                closeAllModals(); // Close all modals first
+                // Display the modal
+                document.getElementById('card-reward-modal').style.display = 'block';
+                // Close the modal when the user clicks the close button
+                document.getElementById('card-reward-modal-close').addEventListener('click', () => {
+                    document.getElementById('card-reward-modal').style.display = 'none';
+                });   
+                return;
+            }
+            // Add each card and its multiplier to the modal list
+            cardsToUse.forEach(card => {
+                const badge = document.createElement('div');
+                badge.className = 'badge'; // Ensure CSS styles for badges are defined
+                badge.innerHTML = `
+                    <span>${card.credit_cards.card_name}</span>
+                    <span class="multiplier">${card.multiplier}x</span>
+                `;
+                cardList.appendChild(badge);
+            });        
+            // Close all modals first
+            closeAllModals();
+            // Display the modal
+            document.getElementById('card-reward-modal').style.display = 'block';
+            // Close the modal when the user clicks the close button
+            document.getElementById('card-reward-modal-close').addEventListener('click', () => {
+                document.getElementById('card-reward-modal').style.display = 'none';
+            });   
         } catch (error) {
             console.error('Error fetching cards:', error);
         }        
@@ -296,7 +348,7 @@ async function findCardToUse() {
                     badge.addEventListener('click', () => {
                         const selectedStoreName = badge.getAttribute('data-store-name');
                         const selectedStoreRewardId = badge.getAttribute('data-store-reward-id');
-                        cardRewardModal(selectedStoreRewardId, selectedStoreName);
+                        //storeCardMultiplier(selectedStoreName, selectedStoreRewardId);
                     });
 
                     // Append the badge to the store list
@@ -324,6 +376,27 @@ async function findCardToUse() {
                 }); 
                 
             }
+
+
+
+
+
+            /*/ Fetch credit card reward types and their multipliers
+            const { data: cardRewardTypes, error: cardRewardError } = await supabase
+                .from('credit_card_reward_types')
+                .select('credit_card_id, reward_type_id, multiplier')
+                .in('credit_card_id', savedCards); // Fetch only the saved cards by their IDs
+            if (cardRewardError) throw new Error('Error fetching card reward types');
+            console.log('credit card rewards type data fetched',cardRewardTypes);
+
+            // Fetch credit card names
+            const { data: creditCards, error: creditCardsError } = await supabase
+                .from('credit_cards')
+                .select('id, card_name')
+                .in('id', savedCards); // Fetch only the saved cards by their IDs
+            if (creditCardsError) throw new Error('Error fetching credit cards');
+            console.log('credit card rewards type data fetched',creditCards);*/
+
         } catch (error) {
             console.error('Error fetching cards:', error);
         }
@@ -331,60 +404,69 @@ async function findCardToUse() {
 
 }
 
-// Populate Card Reward Modal
-async function cardRewardModal(rewardID, reward_store_name) {
-    // Retrieve the saved card IDs from localStorage
-    const savedCards = JSON.parse(localStorage.getItem('selectedCards')) || [];
+// Function to fetch card multiplier for a store
+async function storeCardMultiplier() {
+    console.log('Store Card Multiplier');
     try {
-        // Fetch the card details for all saved cards from the database
-        const { data, error } = await supabase
-            .from('credit_card_reward_types')
-            .select('credit_card_id, reward_type_id, multiplier, credit_cards(card_name)')
-            .in('credit_card_id', savedCards) // Fetch only the saved cards by their IDs
-            .order('multiplier', { ascending: false });
-        if (error) {
-            console.error('Error fetching cards:', error);
-            return;
-        }
-        // Update the modal with the reward category/store name
-        document.getElementById('reward-category-store-name').textContent = reward_store_name;
-        // Get the modal and list elements
-        const cardList = document.getElementById('card-list');
-        cardList.innerHTML = '';  // Clear any existing content in the list
-        // Filter the cards based on the selected reward type and log their multiplier
-        const cardsToUse = data.filter(card => card.reward_type_id === Number(rewardID));
-        if (cardsToUse.length === 0) {
-            cardList.innerHTML = '<p>Please select at least one credit card in the settings (top right) to view its multiplier value.</p>';  // User needs to select atleast one card 
-            closeAllModals(); // Close all modals first
+            // Fetch the card details for all saved cards from the database
+            const { data, error } = await supabase
+                .from('credit_card_reward_types')
+                .select('credit_card_id, reward_type_id, multiplier, credit_cards(card_name)')
+                .in('credit_card_id', savedCards) // Fetch only the saved cards by their IDs
+                .order('multiplier', { ascending: false });
+            if (error) {
+                console.error('Error fetching cards:', error);
+                return;
+            }
+            // Get the reward category name from the 'reward_types' table
+            const { data: rewardData, error: rewardError } = await supabase
+                .from('reward_types')
+                .select('reward_type')
+                .eq('id', selectedRewardId)
+                .single(); // Get a single result
+            if (rewardError) {
+                console.error('Error fetching reward category:', rewardError);
+                return;
+            }
+            // Update the modal with the reward category/store name
+            document.getElementById('reward-category-store-name').textContent = rewardData.reward_type;
+            // Get the modal and list elements
+            const cardList = document.getElementById('card-list');
+            cardList.innerHTML = '';  // Clear any existing content in the list
+            // Filter the cards based on the selected reward type and log their multiplier
+            const cardsToUse = data.filter(card => card.reward_type_id === Number(selectedRewardId));
+            if (cardsToUse.length === 0) {
+                cardList.innerHTML = '<p>Please select at least one credit card in the settings (top right) to view its multiplier value.</p>';  // User needs to select atleast one card 
+                closeAllModals(); // Close all modals first
+                // Display the modal
+                document.getElementById('card-reward-modal').style.display = 'block';
+                // Close the modal when the user clicks the close button
+                document.getElementById('card-reward-modal-close').addEventListener('click', () => {
+                    document.getElementById('card-reward-modal').style.display = 'none';
+                });   
+                return;
+            }
+            // Add each card and its multiplier to the modal list
+            cardsToUse.forEach(card => {
+                const badge = document.createElement('div');
+                badge.className = 'badge'; // Ensure CSS styles for badges are defined
+                badge.innerHTML = `
+                    <span>${card.credit_cards.card_name}</span>
+                    <span class="multiplier">${card.multiplier}x</span>
+                `;
+                cardList.appendChild(badge);
+            });        
+            // Close all modals first
+            closeAllModals();
             // Display the modal
             document.getElementById('card-reward-modal').style.display = 'block';
             // Close the modal when the user clicks the close button
             document.getElementById('card-reward-modal-close').addEventListener('click', () => {
                 document.getElementById('card-reward-modal').style.display = 'none';
             });   
-            return;
+        } catch (error) {
+            console.error('Error fetching cards:', error);
         }
-        // Add each card and its multiplier to the modal list
-        cardsToUse.forEach(card => {
-            const badge = document.createElement('div');
-            badge.className = 'badge'; // Ensure CSS styles for badges are defined
-            badge.innerHTML = `
-                <span>${card.credit_cards.card_name}</span>
-                <span class="multiplier">${card.multiplier}x</span>
-            `;
-            cardList.appendChild(badge);
-        });        
-        // Close all modals first
-        closeAllModals();
-        // Display the modal
-        document.getElementById('card-reward-modal').style.display = 'block';
-        // Close the modal when the user clicks the close button
-        document.getElementById('card-reward-modal-close').addEventListener('click', () => {
-            document.getElementById('card-reward-modal').style.display = 'none';
-        });
-    } catch (error) {
-        console.error('Error fetching data from database:', error);
-    }
 }
 
 // Add event listener to the 'Find Card to Use' button

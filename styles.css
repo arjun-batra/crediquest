@@ -131,12 +131,14 @@ button:hover {
     border: 1px solid #888;
     width: 80%; /* Adjust the width */
     max-width: 500px; /* Max width of modal */
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 /* The close button inside the modal */
 .modal-close {
     padding: 10px 20px;
-    background-color: #000000;
+    background-color: #333;
     color: white;
     border: none;
     cursor: pointer;
@@ -213,8 +215,6 @@ label {
     cursor: pointer;
     user-select: none;
 }
-
-
 
 /* Footer styling */
 footer {
@@ -296,3 +296,52 @@ footer h6 {
     font-size: 1.2em;
 }
 
+/* Badge Layout */
+.badge {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #ccc;
+    border-radius: 8px;
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge .multiplier {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Style the badges inside the store selection modal to look like buttons */
+#store-selection-modal .badge {
+    display: inline-block;
+    padding: 10px 15px;
+    margin-right: 5px;
+    background-color: #333; /* Blue background */
+    color: white;
+    border-radius: 5px;
+    border: 1px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s ease;
+    font-size: 16px;
+
+}
+
+/* Hover effect */
+#store-selection-modal .badge:hover {
+    background-color: #555;
+}
+
+/* Active effect on click (simulating a button press) */
+#store-selection-modal .badge:active {
+    background-color: #000000;
+    transform: scale(0.98); /* Slight shrink effect to mimic button press */
+}
+
+/* Optional: Adding some accessibility for keyboard navigation */
+#store-selection-modal .badge:focus {
+    outline: 3px solid #0056b3;
+}

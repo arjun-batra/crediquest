@@ -90,19 +90,30 @@
     </div>
 
     <!-- Modal structure -->
+    <div id="instruction-modal" class="modal" style="display: none;">
+        <div id="instructions-modal-content" class="modal-content">
+            <!-- Instructions for when user doesn't select reward category or enter store name -->
+            <div id="instruction" style="display: none;"></div>
+            <button id="instruction-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>
     <div id="card-reward-modal" class="modal" style="display: none;">
         <div id="card-reward-modal-content" class="modal-content">
-            <h2 id="reward-category-name"></h2> <!-- Reward category name -->
-            <ul id="card-list" style="display: block">
-                <!-- List of cards with multipliers will go here -->
-            </ul>
-            <!-- Instructions for when no cards are available -->
-            <div id="card-reward-instruction" style="display: none;">
-                <p>Please select at least one credit card in the settings (top right) to view its multiplier value.</p>
+            <h2 id="reward-category-store-name"></h2> <!-- Reward category name -->
+            <div id="card-list" style="display: block">
+                <span></span><!-- List of cards with multipliers will go here -->
             </div>
             <button id="card-reward-modal-close" class="modal-close">Close</button>
         </div>
     </div>
+    <div id="store-selection-modal" class="modal" style="display: none;">
+        <div id="store-selection-modal-content" class="modal-content">
+            <div id="store-list" style="display: block">
+                <span></span><!-- List of stores will go here -->
+            </div>
+            <button id="store-selection-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>    
     
     <!-- Landscape mode warning -->
     <div id="orientation-warning" style="display: none;">

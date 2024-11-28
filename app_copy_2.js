@@ -138,7 +138,10 @@ document.getElementById('settings-select-all-button').addEventListener('click', 
     // Update button text
     const selectAllButton = document.getElementById('settings-select-all-button');
     selectAllButton.textContent = allSelected ? 'Select All' : 'Deselect All';
+    console.log(allSelected ? 'All checkboxes deselected.' : 'All checkboxes selected.');
+    console.log('Updated Selected Cards:', selectedCardIds);
     saveSelectedCards();
+    console.log('Selected Cards:', selectedCardIds);
 });
 // Handling selection or deselection of credit card
 function handleCardSelection(event) {
@@ -152,6 +155,7 @@ function handleCardSelection(event) {
     }
     // Save the updated selection to local storage
     saveSelectedCards();
+    console.log('Selected Cards:', selectedCardIds);
 }
 // Save selected cards to local storage
 function saveSelectedCards() {
@@ -166,6 +170,7 @@ function loadSelectedCards() {
         selectedCardIds = JSON.parse(savedCards);
     } else {
         // If no saved cards exist, select all cards by default
+        console.log('No saved cards found. Selecting all cards by default.');
         selectedCardIds = []; // Clear any previous selections
         const checkboxes = document.querySelectorAll('#selected-cards-container input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
@@ -333,6 +338,9 @@ async function findCardToUse() {
 
 // Populate Card Reward Modal
 async function cardRewardModal(rewardID, reward_store_name) {
+    console.log('Card Reward Modal');
+    console.log(rewardID);
+    console.log(reward_store_name);
     // Retrieve the saved card IDs from localStorage
     const savedCards = JSON.parse(localStorage.getItem('selectedCards')) || [];
     try {
