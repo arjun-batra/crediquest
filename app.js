@@ -1,3 +1,11 @@
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+        .register('service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(err => console.log('Service Worker Registration Failed:', err));
+}
+
+
 // Get DOM elements for store name input, reward type dropdown, search button, and modal elements
 const settingsBtn = document.getElementById('settings-btn');
 const aboutBtn = document.getElementById('about-btn');
