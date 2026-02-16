@@ -18,6 +18,9 @@ const closeAboutModalButton = document.getElementById('about-modal-close');
 const closeContributeModalButton = document.getElementById('contribute-modal-close');
 const selectedCardsContainer = document.getElementById('selected-cards-container');
 
+// Initialize Supabase client
+const supabase = window.supabase.createClient('https://yaqarscylnpmmbllfwxw.supabase.co','sb_publishable_15X4H7bwLKJ-QZr_DJYnuA_BvO-fODf');
+
 // Screen orientation warning
 function checkOrientation() {
     // Check if the device is in portrait orientation
@@ -38,9 +41,6 @@ window.onload = () => {
     loadRewards(); // Call function to load rewards
     handleInputAndDropdown(); // Call function to handle input and dropdown interaction
 };
-
-// Initialize Supabase client
-const supabase = window.supabase.createClient('https://yaqarscylnpmmbllfwxw.supabase.co','sb_publishable_15X4H7bwLKJ-QZr_DJYnuA_BvO-fODf');
 
 // Functionality to handle navigation modals.
 // Function to close any currently open modal
