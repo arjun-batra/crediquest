@@ -40,7 +40,7 @@ window.onload = () => {
 };
 
 // Initialize Supabase client
-const supabase = window.supabase.createClient('https://yaqarscylnpmmbllfwxw.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhcWFyc2N5bG5wbW1ibGxmd3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzOTQ5MDIsImV4cCI6MjA0Nzk3MDkwMn0.KuYXx8b-5MKDLmW6DfoG5lyMZPwFMROlbnDC-vJZDd8');
+const supabase = window.supabase.createClient('https://yaqarscylnpmmbllfwxw.supabase.co','sb_publishable_15X4H7bwLKJ-QZr_DJYnuA_BvO-fODf');
 
 // Functionality to handle navigation modals.
 // Function to close any currently open modal
