@@ -216,6 +216,28 @@
         </div>
     </div>
 
+    <!-- Tangerine bonus category picker modal -->
+    <!-- This modal cannot be dismissed by tapping the backdrop — user must save or tap ✕ -->
+    <div id="tangerine-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="tangerine-modal-title">
+        <div class="modal-box modal-box--tangerine">
+            <div class="modal-header">
+                <div class="tangerine-modal-title-row">
+                    <span class="tangerine-icon-badge">🍊</span>
+                    <h2 class="modal-title" id="tangerine-modal-title">Tangerine bonus categories</h2>
+                </div>
+                <button class="modal-x" data-close="tangerine-modal" aria-label="Close">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <p class="modal-sub">Tangerine lets you pick <strong>2 or 3 categories</strong> that earn 2% cash back. Select yours so results show your actual earn rate.</p>
+            <div class="modal-body" id="tangerine-cats-container"></div>
+            <div class="modal-footer modal-footer--tangerine">
+                <span class="tangerine-count" id="tangerine-count-label">Select 2 or 3 categories</span>
+                <button class="btn-orange" id="tangerine-save-btn" disabled>Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Orientation warning -->
     <div id="orientation-warning" class="orientation-overlay">
         <p class="orientation-msg">Rotate to portrait for the best experience.</p>
