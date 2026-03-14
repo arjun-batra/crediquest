@@ -44,9 +44,7 @@ window.addEventListener('orientationchange', checkOrientation);
 checkOrientation();
 
 // ─── Init ──────────────────────────────────────────────────────────────────
-window.onload = () => {
-    loadRewards();
-    handleInputAndDropdown();
+window.onload = async () => {
     // Wire up close buttons once at page load — no duplicate listeners
     document.getElementById('instruction-modal-close').onclick = () => {
         document.getElementById('instruction-modal').style.display = 'none';
@@ -57,7 +55,39 @@ window.onload = () => {
     document.getElementById('store-selection-modal-close').onclick = () => {
         document.getElementById('store-selection-modal').style.display = 'none';
     };
+
+    // Load rewards dropdown
+    await loadRewards();
+    handleInputAndDropdown();
+
+    // FIX: Initialize card selections on startup — not just when Settings opens.
+    // If the user has never opened Settings, selectedCards in localStorage is null,
+    // causing all card queries to run against an empty array and return nothing.
+    await initializeCardSelections();
 };
+
+// Fetch all card IDs and default-select them all on first run.
+// On subsequent visits, localStorage already has the user's saved selection.
+async function initializeCardSelections() {
+    const saved = localStorage.getItem('selectedCards');
+    if (saved) {
+        // User has a saved preference — load it into memory
+        selectedCardIds = JSON.parse(saved);
+        return;
+    }
+    // First run: fetch all cards and select them all by default
+    try {
+        const { data, error } = await supabase
+            .from('credit_cards')
+            .select('id');
+        if (error) { console.error('Error initializing card selections:', error); return; }
+        creditCardsCache = null; // will be populated with full names when settings opens
+        selectedCardIds = data.map(c => String(c.id));
+        saveSelectedCards();
+    } catch (err) {
+        console.error('Error initializing card selections:', err);
+    }
+}
 
 // ─── Modal helpers ─────────────────────────────────────────────────────────
 function closeAllModals() {
