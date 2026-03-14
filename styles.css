@@ -1,34 +1,81 @@
-/* ── Reset ───────────────────────────────────────────────────────────────── */
+/* ── Universal reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Design tokens ───────────────────────────────────────────────────────── */
+/* ── Design tokens ─────────────────────────────────────────────────────── */
+/*
+   Logo colours:
+     Green  #7bc428  (card body — primary action)
+     Blue   #1a5ca8  (card stripe — nav/brand)
+     Red    #cc2229  (card accent stripe)
+*/
 :root {
-    --bg:          #0d0d0d;
-    --bg-card:     #161616;
-    --bg-elevated: #1f1f1f;
-    --bg-hover:    #262626;
-    --border:      #2a2a2a;
-    --border-mid:  #333;
-    --text-primary:   #f0f0f0;
-    --text-secondary: #888;
-    --text-muted:     #555;
-    --accent:      #f5a623;       /* amber — reward/gold feel */
-    --accent-dim:  rgba(245,166,35,.12);
-    --green:       #22c55e;
-    --green-dim:   rgba(34,197,94,.12);
-    --red:         #ef4444;
-    --radius-sm:   8px;
-    --radius-md:   12px;
-    --radius-lg:   20px;
-    --shadow:      0 4px 24px rgba(0,0,0,.5);
-    --transition:  200ms cubic-bezier(.4,0,.2,1);
+    /* Brand */
+    --green:        #7bc428;
+    --green-dark:   #5e9a1e;
+    --green-light:  rgba(123, 196, 40, 0.14);
+    --blue:         #1a5ca8;
+    --blue-dark:    #144a8a;
+    --red:          #cc2229;
+
+    /* Light mode surfaces */
+    --bg:           #f2f6ee;
+    --bg-card:      #ffffff;
+    --bg-elevated:  #eaf0e4;
+    --bg-hover:     #dfebd7;
+    --border:       #d4e0cb;
+    --border-mid:   #bfd0b4;
+
+    /* Light mode text */
+    --text-primary:   #182412;
+    --text-secondary: #4a6040;
+    --text-muted:     #7a9068;
+
+    /* Toggle */
+    --toggle-off:  #c8d8c0;
+    --toggle-on:   var(--green);
+
+    /* Nav (always brand blue, both modes) */
+    --nav-bg:      var(--blue);
+    --nav-text:    #ffffff;
+    --nav-border:  rgba(255,255,255,0.12);
+
+    /* Misc */
+    --shadow-card:  0 2px 16px rgba(0,0,0,.08);
+    --shadow-modal: 0 8px 40px rgba(0,0,0,.18);
+    --radius-sm:    10px;
+    --radius-md:    16px;
+    --radius-lg:    22px;
+    --transition:   180ms cubic-bezier(.4,0,.2,1);
 }
 
-/* ── Base ────────────────────────────────────────────────────────────────── */
-html { -webkit-text-size-adjust: 100%; }
+/* ── Dark mode overrides ────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg:           #0e1a0b;
+        --bg-card:      #162012;
+        --bg-elevated:  #1e2e18;
+        --bg-hover:     #263820;
+        --border:       #2a3e22;
+        --border-mid:   #384f2e;
+
+        --text-primary:   #dff0cc;
+        --text-secondary: #80a868;
+        --text-muted:     #507040;
+
+        --toggle-off:  #2d4226;
+        --shadow-card:  0 2px 16px rgba(0,0,0,.4);
+        --shadow-modal: 0 8px 40px rgba(0,0,0,.6);
+    }
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+html {
+    -webkit-text-size-adjust: 100%;
+    height: 100%;
+}
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
     background: var(--bg);
     color: var(--text-primary);
     min-height: 100vh;
@@ -38,160 +85,164 @@ body {
     overflow-x: hidden;
 }
 
-/* ── Nav ─────────────────────────────────────────────────────────────────── */
+/* ── Nav ────────────────────────────────────────────────────────────────── */
+/*
+   KEY FIX: The nav extends behind the iOS status bar using
+   padding-top: env(safe-area-inset-top). This means the nav's
+   background colour (brand blue) fills the status bar area, and
+   .nav-inner (the actual content row) sits below it — fully visible
+   and tappable.
+*/
 .nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    height: 60px;
-    background: rgba(13,13,13,.9);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
+    background: var(--nav-bg);
     position: sticky;
     top: 0;
     z-index: 100;
     width: 100%;
+    /* Push content below the status bar */
+    padding-top: env(safe-area-inset-top);
+    border-bottom: 1px solid var(--nav-border);
+}
+
+.nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 56px;
 }
 
 .nav-brand {
     display: flex;
     align-items: center;
     gap: 10px;
+    text-decoration: none;
 }
 
-.nav-logo {
+.nav-logo-img {
     width: 32px;
     height: 32px;
-    background: var(--accent);
-    color: #000;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: .05em;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 .nav-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 17px;
     letter-spacing: -.02em;
-    color: var(--text-primary);
+    color: var(--nav-text);
 }
 
 .nav-actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
 }
 
 .nav-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     padding: 7px 12px;
-    background: transparent;
-    border: 1px solid transparent;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
     border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-family: 'DM Sans', sans-serif;
+    color: rgba(255,255,255,.9);
+    font-family: 'Nunito', sans-serif;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
     transition: all var(--transition);
     white-space: nowrap;
 }
 
 .nav-btn:hover {
-    background: var(--bg-elevated);
-    border-color: var(--border);
-    color: var(--text-primary);
+    background: rgba(255,255,255,.22);
+    color: #fff;
 }
 
-.nav-btn--accent {
-    border-color: var(--border);
-    color: var(--text-primary);
+.nav-btn:active {
+    background: rgba(255,255,255,.3);
 }
 
-.nav-btn--accent:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+.nav-btn--settings {
+    background: rgba(255,255,255,.18);
+    border-color: rgba(255,255,255,.3);
 }
 
-/* ── Main ────────────────────────────────────────────────────────────────── */
+/* ── Main layout ────────────────────────────────────────────────────────── */
 .main {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 20px 40px;
-    gap: 40px;
+    padding: 40px 20px 32px;
+    gap: 32px;
 }
 
-/* ── Hero ────────────────────────────────────────────────────────────────── */
+/* ── Hero text ──────────────────────────────────────────────────────────── */
 .hero {
     text-align: center;
-    max-width: 500px;
+    max-width: 420px;
 }
 
 .hero-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(2.2rem, 7vw, 3.5rem);
-    line-height: 1.05;
-    letter-spacing: -.04em;
+    font-weight: 900;
+    font-size: clamp(2rem, 8vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -.03em;
     color: var(--text-primary);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .hero-sub {
     font-size: 15px;
+    font-weight: 600;
     color: var(--text-secondary);
     line-height: 1.6;
 }
 
-/* ── Search card ─────────────────────────────────────────────────────────── */
+/* ── Search card ────────────────────────────────────────────────────────── */
 .search-card {
     width: 100%;
-    max-width: 480px;
+    max-width: 440px;
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 28px;
+    padding: 24px 22px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
+    box-shadow: var(--shadow-card);
 }
 
 .search-field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
 }
 
 .field-label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .06em;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .07em;
     text-transform: uppercase;
-    color: var(--text-secondary);
+    color: var(--text-muted);
 }
 
 .field-input {
     width: 100%;
-    padding: 12px 14px;
+    padding: 11px 13px;
     background: var(--bg-elevated);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
     font-size: 15px;
+    font-weight: 600;
     outline: none;
     transition: border-color var(--transition);
     -webkit-appearance: none;
@@ -199,11 +250,13 @@ body {
 }
 
 .field-input:focus {
-    border-color: var(--accent);
+    border-color: var(--green);
+    background: var(--bg-card);
 }
 
 .field-input::placeholder {
     color: var(--text-muted);
+    font-weight: 600;
 }
 
 .select-wrapper {
@@ -212,18 +265,17 @@ body {
 
 .field-select {
     cursor: pointer;
-    padding-right: 40px;
-    color: var(--text-primary);
+    padding-right: 38px;
 }
 
 .field-select option {
-    background: var(--bg-elevated);
+    background: var(--bg-card);
     color: var(--text-primary);
 }
 
-.select-arrow {
+.select-chevron {
     position: absolute;
-    right: 12px;
+    right: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
@@ -233,10 +285,11 @@ body {
 .search-divider {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     color: var(--text-muted);
-    font-size: 12px;
-    letter-spacing: .06em;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .07em;
     text-transform: uppercase;
 }
 
@@ -244,10 +297,12 @@ body {
 .search-divider::after {
     content: '';
     flex: 1;
-    height: 1px;
+    height: 1.5px;
     background: var(--border);
+    border-radius: 2px;
 }
 
+/* ── Search button ──────────────────────────────────────────────────────── */
 .search-btn {
     width: 100%;
     display: flex;
@@ -255,71 +310,80 @@ body {
     justify-content: center;
     gap: 8px;
     padding: 14px 24px;
-    background: var(--accent);
-    color: #000;
+    background: var(--green);
+    color: #fff;
     border: none;
     border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
     cursor: pointer;
     transition: all var(--transition);
     letter-spacing: -.01em;
+    /* Subtle bottom shadow matching green */
+    box-shadow: 0 4px 14px rgba(123, 196, 40, 0.35);
 }
 
 .search-btn:hover {
-    background: #fbb740;
+    background: var(--green-dark);
+    box-shadow: 0 4px 18px rgba(123, 196, 40, 0.45);
     transform: translateY(-1px);
 }
 
 .search-btn:active {
     transform: translateY(0);
+    box-shadow: none;
 }
 
 .search-btn:disabled {
     opacity: .5;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
-/* ── Spinner ─────────────────────────────────────────────────────────────── */
+/* ── Spinner ────────────────────────────────────────────────────────────── */
 .spinner {
     display: none;
     justify-content: center;
     gap: 6px;
-    padding: 4px 0;
+    padding: 2px 0;
 }
 
 .spinner.active { display: flex; }
 
 .spinner-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 1.2s ease-in-out infinite;
+    background: var(--green);
+    animation: dot-pulse 1.2s ease-in-out infinite;
 }
 
 .spinner-dot:nth-child(2) { animation-delay: .2s; }
 .spinner-dot:nth-child(3) { animation-delay: .4s; }
 
-@keyframes pulse {
-    0%, 80%, 100% { opacity: .2; transform: scale(.8); }
-    40% { opacity: 1; transform: scale(1); }
+@keyframes dot-pulse {
+    0%, 80%, 100% { opacity: .2; transform: scale(.7); }
+    40%           { opacity: 1;  transform: scale(1); }
 }
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
+/* ── Footer ─────────────────────────────────────────────────────────────── */
 .footer {
-    padding: 20px 24px calc(20px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    /* Critical: extra bottom padding for iPhone home indicator */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    border-top: 1.5px solid var(--border);
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .footer-credit {
     font-size: 13px;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
@@ -331,349 +395,391 @@ body {
 
 .footer-disclaimer {
     font-size: 11px;
+    font-weight: 600;
     color: var(--text-muted);
-    line-height: 1.6;
-    max-width: 600px;
+    line-height: 1.5;
+    max-width: 540px;
     margin: 0 auto;
 }
 
-/* ── Modals ──────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODALS
+   Fix for full-screen non-scrollable modal:
+   • .modal         → flex overlay (centers or bottom-sheet on mobile)
+   • .modal-box     → flex column, max-height constrained to viewport
+   • .modal-header  → fixed height, never scrolls
+   • .modal-body    → flex: 1, overflow-y: auto — THIS is what scrolls
+   • .modal-footer  → fixed height, never scrolls
+═══════════════════════════════════════════════════════════════════════════ */
 .modal {
     display: none;
     position: fixed;
     inset: 0;
     z-index: 200;
-    background: rgba(0,0,0,.7);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    padding: 20px;
-    overflow-y: auto;
-    align-items: flex-start;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    /* Centre by default; overridden for mobile */
+    padding: 24px 20px;
+    overflow: hidden;
+    align-items: center;
     justify-content: center;
 }
 
-.modal.open {
-    display: flex;
-}
+.modal.open { display: flex; }
 
 .modal-box {
     background: var(--bg-card);
-    border: 1px solid var(--border-mid);
+    border: 1.5px solid var(--border-mid);
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 460px;
-    margin: auto;
-    padding: 24px;
-    animation: modal-in 200ms cubic-bezier(.34,1.56,.64,1);
+
+    /* Flex column: header + body + footer */
+    display: flex;
+    flex-direction: column;
+
+    /*
+       Max height = viewport minus top/bottom safe areas minus padding.
+       This ensures the modal never exceeds the screen, making the
+       body portion scroll instead.
+    */
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px);
+    overflow: hidden; /* clips children to border-radius */
+
+    box-shadow: var(--shadow-modal);
+    animation: modal-pop 200ms cubic-bezier(.34,1.4,.64,1);
 }
 
-@keyframes modal-in {
-    from { opacity: 0; transform: scale(.95) translateY(8px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
+@keyframes modal-pop {
+    from { opacity: 0; transform: scale(.93); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
-.modal-box--error {
-    border-color: rgba(239,68,68,.3);
-}
+.modal-box--sm { max-width: 360px; }
 
+/* Fixed header — never scrolls */
 .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    padding: 20px 20px 0;
+    flex-shrink: 0;
 }
 
 .modal-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: -.03em;
+    font-weight: 900;
+    font-size: 19px;
+    letter-spacing: -.025em;
     color: var(--text-primary);
 }
 
-.modal-close-btn {
+/* ✕ close button */
+.modal-x {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
     color: var(--text-secondary);
     cursor: pointer;
     transition: all var(--transition);
     flex-shrink: 0;
+    margin-left: 10px;
 }
 
-.modal-close-btn:hover {
+.modal-x:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
 }
 
 .modal-sub {
+    padding: 10px 20px 0;
     font-size: 13px;
+    font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 16px;
     line-height: 1.5;
+    flex-shrink: 0;
 }
 
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
+/* Scrollable body — this is where the overflow happens */
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 14px 20px 4px;
 }
+
+/* Fixed footer — never scrolls */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px 20px;
+    border-top: 1.5px solid var(--border);
+    flex-shrink: 0;
+}
+
+.modal-footer--end { justify-content: flex-end; }
 
 /* ── Result cards ────────────────────────────────────────────────────────── */
-.results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
 .result-card {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    transition: border-color var(--transition);
     gap: 12px;
+    padding: 13px 14px;
+    background: var(--bg-elevated);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    transition: border-color var(--transition);
 }
 
-/* Top result gets special treatment */
+.result-card:last-child { margin-bottom: 0; }
+
+/* Top result — green highlight */
 .result-card--best {
-    background: var(--green-dim);
-    border-color: rgba(34,197,94,.3);
-}
-
-.result-card--best .result-rank {
-    color: var(--green);
+    background: var(--green-light);
+    border-color: rgba(123, 196, 40, .45);
 }
 
 .result-rank {
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 12px;
     color: var(--text-muted);
     min-width: 20px;
+    flex-shrink: 0;
+}
+
+.result-card--best .result-rank {
+    color: var(--green-dark);
+    font-size: 14px;
 }
 
 .result-name {
     flex: 1;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--text-primary);
     line-height: 1.3;
 }
 
 .result-multiplier {
     font-family: 'DM Mono', monospace;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 500;
-    color: var(--accent);
+    color: var(--green-dark);
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.result-card--best .result-multiplier {
-    color: var(--green);
-}
+.result-card--best .result-multiplier { color: var(--green-dark); }
 
 .results-empty {
-    padding: 24px 0;
+    padding: 20px 0 8px;
     text-align: center;
     color: var(--text-secondary);
     font-size: 14px;
+    font-weight: 600;
     line-height: 1.6;
 }
 
-/* ── Store picker ────────────────────────────────────────────────────────── */
-.store-list {
+/* ── Store chips ─────────────────────────────────────────────────────────── */
+.store-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    max-height: 50vh;
-    overflow-y: auto;
 }
 
 .store-chip {
     padding: 8px 14px;
     background: var(--bg-elevated);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     border-radius: 100px;
     color: var(--text-primary);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
     transition: all var(--transition);
 }
 
 .store-chip:hover {
-    background: var(--bg-hover);
-    border-color: var(--accent);
-    color: var(--accent);
+    background: var(--green-light);
+    border-color: var(--green);
+    color: var(--green-dark);
 }
 
 .store-empty {
     color: var(--text-secondary);
     font-size: 14px;
-    padding: 12px 0;
+    font-weight: 600;
     line-height: 1.6;
+    padding: 8px 0;
 }
 
-/* ── Settings checkboxes ─────────────────────────────────────────────────── */
-.cards-container {
-    max-height: 52vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 4px;
-}
-
-.card-row {
+/* ══════════════════════════════════════════════════════════════════════════
+   CARD TOGGLE SWITCHES
+   Pill-shaped iOS-style toggle. Green when on, muted when off.
+   Matches the logo's green card body colour.
+══════════════════════════════════════════════════════════════════════════ */
+.card-toggle-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: var(--radius-sm);
+    justify-content: space-between;
+    gap: 14px;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    /* Tap target sizing for mobile */
+    min-height: 48px;
+}
+
+.card-toggle-row:last-child { border-bottom: none; }
+
+.card-toggle-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    flex: 1;
+    line-height: 1.3;
+    user-select: none;
+}
+
+/* The toggle pill */
+.toggle-pill {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    border-radius: 14px;
+    background: var(--toggle-off);
+    border: none;
     cursor: pointer;
     transition: background var(--transition);
+    flex-shrink: 0;
+    /* Focus visible ring */
+    outline: none;
 }
 
-.card-row:hover {
-    background: var(--bg-elevated);
+.toggle-pill:focus-visible {
+    box-shadow: 0 0 0 3px rgba(123, 196, 40, .4);
 }
 
-.card-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    border-radius: 5px;
-    border: 1.5px solid var(--border-mid);
-    background: transparent;
-    cursor: pointer;
-    transition: all var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* The sliding thumb */
+.toggle-thumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.25);
+    transition: transform var(--transition);
+    pointer-events: none;
 }
 
-.card-checkbox:checked {
-    background: var(--accent);
-    border-color: var(--accent);
+/* ON state */
+.toggle-pill[aria-checked="true"] {
+    background: var(--green);
 }
 
-.card-checkbox:checked::before {
-    content: '✓';
-    color: #000;
-    font-size: 11px;
-    font-weight: 700;
-    position: relative;
-    top: 1px;
-    left: 1px;
-}
-
-.card-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    cursor: pointer;
-    user-select: none;
+.toggle-pill[aria-checked="true"] .toggle-thumb {
+    transform: translateX(22px);
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 .btn-primary {
-    padding: 10px 20px;
-    background: var(--accent);
-    color: #000;
+    padding: 10px 22px;
+    background: var(--green);
+    color: #fff;
     border: none;
     border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 800;
     cursor: pointer;
     transition: background var(--transition);
+    white-space: nowrap;
 }
 
-.btn-primary:hover { background: #fbb740; }
+.btn-primary:hover { background: var(--green-dark); }
 
-.btn-secondary {
-    padding: 10px 20px;
+.btn-ghost {
+    padding: 10px 18px;
     background: transparent;
     color: var(--text-secondary);
-    border: 1px solid var(--border-mid);
+    border: 1.5px solid var(--border-mid);
     border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
     transition: all var(--transition);
+    white-space: nowrap;
 }
 
-.btn-secondary:hover {
+.btn-ghost:hover {
     background: var(--bg-elevated);
     color: var(--text-primary);
 }
 
-/* ── About / Contribute ──────────────────────────────────────────────────── */
-.about-content {
+/* ── Prose (About / Contribute) ──────────────────────────────────────────── */
+.prose {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
-.about-content p {
+.prose p {
     font-size: 14px;
+    font-weight: 600;
     color: var(--text-secondary);
     line-height: 1.7;
 }
 
-.about-content strong {
-    color: var(--text-primary);
-    font-weight: 600;
+.prose strong { color: var(--text-primary); font-weight: 800; }
+
+.prose ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 0;
 }
 
-.about-version {
+.prose ul li {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding-left: 18px;
+    position: relative;
+}
+
+.prose ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--green-dark);
+}
+
+.version-tag {
     font-family: 'DM Mono', monospace;
     font-size: 12px !important;
     color: var(--text-muted) !important;
 }
 
-.contribute-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.contribute-list li {
+/* ── Error text ───────────────────────────────────────────────────────────── */
+.error-text {
     font-size: 14px;
+    font-weight: 600;
     color: var(--text-secondary);
     line-height: 1.6;
-    padding-left: 16px;
-    position: relative;
-}
-
-.contribute-list li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: var(--text-muted);
-}
-
-/* ── Error modal ─────────────────────────────────────────────────────────── */
-.error-message {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 4px;
 }
 
 /* ── Orientation overlay ─────────────────────────────────────────────────── */
@@ -682,73 +788,83 @@ body {
     position: fixed;
     inset: 0;
     z-index: 999;
-    background: rgba(0,0,0,.92);
+    background: rgba(0,0,0,.88);
     align-items: center;
     justify-content: center;
+    padding: 32px;
 }
 
 .orientation-overlay.show { display: flex; }
 
 .orientation-msg {
+    color: #aaa;
+    font-size: 16px;
+    font-weight: 700;
     text-align: center;
-    padding: 32px;
-    color: var(--text-secondary);
-    font-size: 15px;
-    max-width: 280px;
     line-height: 1.6;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
     .main {
-        padding: 32px 16px 32px;
-        gap: 28px;
+        padding: 28px 16px 24px;
+        gap: 24px;
         justify-content: flex-start;
-    }
-
-    .hero-title {
-        font-size: clamp(1.9rem, 9vw, 2.6rem);
     }
 
     .search-card {
         padding: 20px 16px;
     }
 
-    .nav {
-        padding: 0 16px;
+    .nav-inner {
+        padding: 0 14px;
+        height: 50px;
     }
 
-    .nav-btn span {
+    /* Collapse nav button labels on small screens */
+    .nav-btn-label {
         display: none;
     }
 
     .nav-btn {
-        padding: 8px;
+        padding: 8px 10px;
         gap: 0;
     }
 
-    .nav-btn--accent span {
-        display: none;
-    }
-
+    /*
+       Mobile modals slide up from bottom as a sheet.
+       This feels native on iPhone.
+    */
     .modal {
-        padding: 12px;
+        padding: 0;
         align-items: flex-end;
     }
 
     .modal-box {
-        border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm);
-        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        border-bottom: none;
         max-width: 100%;
-        padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+        /* Add safe area bottom padding inside the box */
+        padding-bottom: env(safe-area-inset-bottom);
+        /* Allow slightly more height on mobile */
+        max-height: calc(92dvh - env(safe-area-inset-top));
+        animation: sheet-up 240ms cubic-bezier(.32,.72,0,1);
     }
 
-    @keyframes modal-in {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
+    @keyframes sheet-up {
+        from { transform: translateY(60px); opacity: .6; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* Override padding-bottom on footer inside the box */
+    .modal-footer {
+        padding-bottom: 16px;
     }
 }
 
 @media (max-width: 375px) {
     .hero-title { font-size: 1.8rem; }
+    .nav-title  { font-size: 15px; }
 }

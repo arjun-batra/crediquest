@@ -1,11 +1,11 @@
 {
     "name": "CrediQuest",
     "short_name": "CrediQuest",
-    "description": "Find your highest-earning credit card for any store or spending category.",
+    "description": "Find your highest-earning credit card for any store or category.",
     "start_url": "/crediquest/index.html",
     "display": "standalone",
-    "background_color": "#0d0d0d",
-    "theme_color": "#0d0d0d",
+    "background_color": "#1a5ca8",
+    "theme_color": "#1a5ca8",
     "icons": [
         {
             "src": "icons/icon-192x192.png",
