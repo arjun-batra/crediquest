@@ -11,7 +11,12 @@ body {
 }
 
 h1 {
-    font-family: 'Aptos', sans-serif;
+    /*
+        FIX: Aptos is a Microsoft font, not available on Google Fonts.
+        Using Plus Jakarta Sans (loaded via Google Fonts) as the primary,
+        with Aptos as a native fallback for users who already have it.
+    */
+    font-family: 'Plus Jakarta Sans', Aptos, sans-serif;
     font-size: 2.5em;
     text-align: center;
     margin-bottom: 20px;
@@ -111,31 +116,37 @@ button:hover {
     background-color: #555;
 }
 
-/* Style for the modal */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+/* Loading spinner */
+#loading-spinner {
+    font-size: 1em;
+    color: #555;
+    margin: 12px 0;
+    font-style: italic;
 }
 
-/* Modal content box */
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 .modal-content {
     background-color: white;
-    margin: 15% auto; /* Center the modal */
+    margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Adjust the width */
-    max-width: 500px; /* Max width of modal */
+    width: 80%;
+    max-width: 500px;
     max-height: 70vh;
     overflow-y: auto;
 }
 
-/* The close button inside the modal */
 .modal-close {
     padding: 10px 20px;
     background-color: #333;
@@ -163,26 +174,24 @@ button:hover {
     background-color: #555;
 }
 
-/* Styling for checkboxes and labels */
+/* Card checkboxes */
 #selected-cards-container {
     margin: 20px 0;
     max-height: 200px;
     overflow-y: auto;
 }
 
-/* Each card item container */
 #selected-cards-container div {
     margin-bottom: 15px;
-    display: flex; /* Use flexbox to align checkbox and label */
-    align-items: center; /* Vertically center the checkbox with the label */
+    display: flex;
+    align-items: center;
     justify-content: flex-start;
 }
 
-/* Custom checkbox style */
 input[type="checkbox"] {
-    appearance: none; /* Remove default styling */
-    -webkit-appearance: none; /* For Safari */
-    -moz-appearance: none; /* For Firefox */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     width: 20px;
     height: 20px;
     border-radius: 5px;
@@ -193,13 +202,11 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
-/* Styling when checkbox is checked */
 input[type="checkbox"]:checked {
     background-color: #000000;
     border-color: #000000;
 }
 
-/* Creating checkmark for the checkbox when selected */
 input[type="checkbox"]:checked::before {
     content: "✔";
     color: white;
@@ -209,14 +216,13 @@ input[type="checkbox"]:checked::before {
     left: 5px;
 }
 
-/* Label style */
 label {
     font-size: 16px;
     cursor: pointer;
     user-select: none;
 }
 
-/* Footer styling */
+/* Footer */
 footer {
     width: 100%;
     background: #000000;
@@ -236,14 +242,14 @@ footer h6 {
     text-align: left;
 }
 
-/* Responsive Styles */
+/* Responsive */
 @media (max-width: 768px) {
     h1 {
         font-size: 2em;
     }
 
     .main-container {
-        width: 90%; /* Make content container smaller on mobile */
+        width: 90%;
         margin: 10px;
     }
 
@@ -272,18 +278,18 @@ footer h6 {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Above all other elements */
+    z-index: 1000;
 }
 
 .orientation-message {
     text-align: center;
     color: white;
     padding: 20px;
-    background-color: rgba(255, 255, 255, 0.1); /* Slightly opaque box */
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
 
@@ -296,7 +302,7 @@ footer h6 {
     font-size: 1.2em;
 }
 
-/* Badge Layout */
+/* Badge */
 .badge {
     display: flex;
     justify-content: space-between;
@@ -313,12 +319,11 @@ footer h6 {
     color: #333;
 }
 
-/* Style the badges inside the store selection modal to look like buttons */
 #store-selection-modal .badge {
     display: inline-block;
     padding: 10px 15px;
     margin-right: 5px;
-    background-color: #333; /* Blue background */
+    background-color: #333;
     color: white;
     border-radius: 5px;
     border: 1px;
@@ -327,21 +332,17 @@ footer h6 {
     text-align: center;
     transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s ease;
     font-size: 16px;
-
 }
 
-/* Hover effect */
 #store-selection-modal .badge:hover {
     background-color: #555;
 }
 
-/* Active effect on click (simulating a button press) */
 #store-selection-modal .badge:active {
     background-color: #000000;
-    transform: scale(0.98); /* Slight shrink effect to mimic button press */
+    transform: scale(0.98);
 }
 
-/* Optional: Adding some accessibility for keyboard navigation */
 #store-selection-modal .badge:focus {
     outline: 3px solid #0056b3;
 }

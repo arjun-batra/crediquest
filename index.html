@@ -4,8 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CrediQuest Alpha 0.3</title>
-    <link href="https://fonts.googleapis.com/css2?family=Aptos:wght@500&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <title>CrediQuest Alpha 0.4</title>
+    <!--
+        FIX: Removed Aptos from Google Fonts import — Aptos is a Microsoft font
+        and is not hosted on Google Fonts. The import was silently 404-ing.
+        Aptos is kept as a native fallback for users who have it (Windows/Office).
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500&family=Roboto:wght@400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -37,7 +42,7 @@
     <!-- Main Content Container -->
     <div class="content-wrapper">
         <div class="main-container">
-            <h1>CrediQuest Alpha 0.3</h1>
+            <h1>CrediQuest Alpha 0.4</h1>
 
             <div class="instruction">
                 <p>Please enter a store name or select a reward type to search.</p>
@@ -80,46 +85,49 @@
             <p>If you'd like to contribute to this project, please reach out to us or fork the repository on GitHub.</p>
             <button id="contribute-modal-close" class="modal-close">Close</button>
         </div>
-    </div>    
-    
-    <!-- Settings Modal for Customization -->
+    </div>
+
+    <!-- Settings Modal -->
     <div id="settings-modal" class="modal" style="display:none;">
         <div id="settings-modal-content" class="modal-content">
-            <h2>Customize Your Card Selection</h2>            
+            <h2>Customize Your Card Selection</h2>
             <div id="selected-cards-container">
-                <!-- User's selected cards checkboxes will go here -->
+                <!-- Checkboxes loaded dynamically -->
             </div>
             <button id="settings-select-all-button">Select All</button>
             <button id="settings-modal-close" class="modal-close">Close</button>
         </div>
     </div>
 
-    <!-- Modal structure -->
+    <!-- Instruction Modal -->
     <div id="instruction-modal" class="modal" style="display: none;">
         <div id="instructions-modal-content" class="modal-content">
-            <!-- Instructions for when user doesn't select reward category or enter store name -->
             <div id="instruction" style="display: none;"></div>
             <button id="instruction-modal-close" class="modal-close">Close</button>
         </div>
     </div>
+
+    <!-- Card Reward Modal -->
     <div id="card-reward-modal" class="modal" style="display: none;">
         <div id="card-reward-modal-content" class="modal-content">
-            <h2 id="reward-category-store-name"></h2> <!-- Reward category name -->
+            <h2 id="reward-category-store-name"></h2>
             <div id="card-list" style="display: block">
-                <span></span><!-- List of cards with multipliers will go here -->
+                <span></span>
             </div>
             <button id="card-reward-modal-close" class="modal-close">Close</button>
         </div>
     </div>
+
+    <!-- Store Selection Modal -->
     <div id="store-selection-modal" class="modal" style="display: none;">
         <div id="store-selection-modal-content" class="modal-content">
             <div id="store-list" style="display: block">
-                <span></span><!-- List of stores will go here -->
+                <span></span>
             </div>
             <button id="store-selection-modal-close" class="modal-close">Close</button>
         </div>
-    </div>    
-    
+    </div>
+
     <!-- Landscape mode warning -->
     <div id="orientation-warning" style="display: none;">
         <div class="orientation-message">
@@ -127,7 +135,7 @@
             <p>This application works best in portrait mode.</p>
         </div>
     </div>
-    
+
     <!-- Footer -->
     <footer>
         <p>Made with ♥️ by Arjun</p>
