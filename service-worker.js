@@ -1,33 +1,39 @@
-const CACHE_NAME = 'crediquest-alpha-0.4.2';
-const urlsToCache = [
+const CACHE = 'crediquest-v0.5';
+const PRECACHE = [
     '/crediquest/',
-    'index.html',
+    '/crediquest/index.html',
     '/crediquest/styles.css',
     '/crediquest/app.js',
     '/crediquest/icons/icon-192x192.png',
-    '/crediquest/icons/icon-500x500.png'  // FIX: was icon-512x512.png — must match manifest.json
+    '/crediquest/icons/icon-500x500.png'
 ];
 
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+self.addEventListener('install', e => {
+    e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
     );
 });
 
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => response || fetch(event.request))
+self.addEventListener('activate', e => {
+    e.waitUntil(
+        caches.keys()
+            .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+            .then(() => self.clients.claim())
     );
 });
 
-self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys().then(cacheNames =>
-            Promise.all(
-                cacheNames
-                    .filter(name => name !== CACHE_NAME)
-                    .map(name => caches.delete(name))
-            )
-        )
+// Network-first for API calls, cache-first for assets
+self.addEventListener('fetch', e => {
+    const url = new URL(e.request.url);
+
+    // Always go to network for Supabase
+    if (url.hostname.includes('supabase.co')) {
+        e.respondWith(fetch(e.request));
+        return;
+    }
+
+    // Cache-first for everything else
+    e.respondWith(
+        caches.match(e.request).then(cached => cached || fetch(e.request))
     );
 });
