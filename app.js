@@ -20,6 +20,43 @@ document.addEventListener('DOMContentLoaded', () => {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhcWFyc2N5bG5wbW1ibGxmd3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzOTQ5MDIsImV4cCI6MjA0Nzk3MDkwMn0.KuYXx8b-5MKDLmW6DfoG5lyMZPwFMROlbnDC-vJZDd8'
     );
 
+    // ── Analytics ─────────────────────────────────────────────────────────
+    // Session ID: UUID generated once per browser session (resets on tab close).
+    // Stored in sessionStorage — not a cookie, no personal data, no consent needed.
+    const SESSION_ID = (() => {
+        let id = sessionStorage.getItem('cq_session');
+        if (!id) {
+            id = crypto.randomUUID();
+            sessionStorage.setItem('cq_session', id);
+        }
+        return id;
+    })();
+
+    // Device type: derived from userAgent and display mode
+    const DEVICE_TYPE = (() => {
+        const ua  = navigator.userAgent.toLowerCase();
+        const pwa = window.matchMedia('(display-mode: standalone)').matches
+                 || window.navigator.standalone === true;
+        if (pwa)                                  return 'pwa';
+        if (/ipad|tablet/.test(ua))               return 'tablet';
+        if (/iphone|android|mobile/.test(ua))     return 'mobile';
+        return 'desktop';
+    })();
+
+    // logEvent: fire-and-forget, never throws, never blocks the UI.
+    // All analytics calls use this — the rest of the app never awaits it.
+    function logEvent(eventName, properties = {}) {
+        sb.from('events').insert({
+            event_name:  eventName,
+            properties:  properties,
+            session_id:  SESSION_ID,
+            device_type: DEVICE_TYPE,
+            app_version: '0.5',
+        }).then(({ error }) => {
+            if (error) console.warn('[CQ] analytics drop:', eventName, error.message);
+        });
+    }
+
     // ── App state ─────────────────────────────────────────────────────────
     let selectedCardIds  = [];
     // creditCardsCache: {id, card_name, point_value_cents}[]
@@ -113,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleMultiplierBtn.classList.add('active');
             togglePerDollarBtn.classList.remove('active');
             if (lastResultsData !== null) renderResults();
+            logEvent('view_toggle', { mode: 'multiplier' });
         }
     });
 
@@ -122,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             togglePerDollarBtn.classList.add('active');
             toggleMultiplierBtn.classList.remove('active');
             if (lastResultsData !== null) renderResults();
+            logEvent('view_toggle', { mode: 'per_dollar' });
         }
     });
 
@@ -211,6 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveCards();
                 updateSelectAllLabel();
+                logEvent('settings_changed', {
+                    action:    newVal ? 'card_added' : 'card_removed',
+                    card_name: card.card_name,
+                    cards_selected_count: selectedCardIds.length,
+                });
             }
 
             row.addEventListener('click', handleToggle);
@@ -322,6 +366,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveBtn.onclick = () => {
             saveTangerineChosenCats(selectedIds);
+            logEvent('tangerine_categories_set', {
+                chosen_count: selectedIds.size,
+                category_ids: [...selectedIds].sort((a, b) => a - b),
+                category_names: [...selectedIds].map(id =>
+                    TANGERINE_ELIGIBLE_CATS.find(c => c.id === id)?.name
+                ).filter(Boolean),
+            });
             closeAll();
             onSave();
         };
@@ -454,11 +505,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Show results modal ────────────────────────────────────────────────
     function showResults(title, cards, rewardTypeId) {
         document.getElementById('results-title').textContent = title;
-        // Cache for re-render on toggle
         lastResultsData  = cards;
         lastRewardTypeId = rewardTypeId;
         renderResults();
         openModal('results-modal');
+        logEvent('result_viewed', {
+            search_term:      title,
+            reward_type_id:   Number(rewardTypeId),
+            result_count:     cards ? cards.length : 0,
+            cards_selected:   selectedCardIds.length,
+            top_card:         cards && cards.length > 0 ? cards[0].credit_cards.card_name : null,
+            top_multiplier:   cards && cards.length > 0 ? cards[0].multiplier : null,
+        });
     }
 
     // ── Fetch card rewards ────────────────────────────────────────────────
@@ -498,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (categoryId) {
             const displayName = categorySelect.options[categorySelect.selectedIndex].text;
+            logEvent('search', { method: 'category', category: displayName, category_id: Number(categoryId) });
             doFetch(categoryId, displayName);
             return;
         }
@@ -512,13 +571,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error) throw error;
 
             if (stores.length === 0) {
+                logEvent('search', { method: 'store', query: storeName, result_count: 0 });
                 showError(`No stores found matching "${storeName}". Try a broader term or use the category dropdown.`);
                 return;
             }
             if (stores.length === 1) {
+                logEvent('search', { method: 'store', query: storeName, result_count: 1, store_name: stores[0].store_name });
                 doFetch(stores[0].reward_type_id, stores[0].store_name);
                 return;
             }
+
+            logEvent('search', { method: 'store', query: storeName, result_count: stores.length });
 
             const storeList = document.getElementById('store-list');
             storeList.innerHTML = '';
@@ -530,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 chip.textContent = store.store_name;
                 chip.addEventListener('click', () => {
                     closeAll();
+                    logEvent('store_selected', { store_name: store.store_name, reward_type_id: store.reward_type_id });
                     doFetch(store.reward_type_id, store.store_name);
                 });
                 chips.appendChild(chip);
@@ -560,10 +624,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardsResult.error) throw cardsResult.error;
             creditCardsCache = cardsResult.data;
             initSelectedCards();
+
+            // Fire app_load after cards are ready so we know cards_selected_count
+            logEvent('app_load', {
+                device_type:          DEVICE_TYPE,
+                cards_selected_count: selectedCardIds.length,
+                tangerine_selected:   selectedCardIds.includes(TANGERINE_CARD_ID),
+                tangerine_cats_set:   getTangerineChosenCats().size,
+                referrer:             document.referrer || 'direct',
+            });
+
         } catch (e) {
             console.error('[CQ] startup failed:', e);
             showError('Failed to load app data. Check your connection and refresh.');
         }
     })();
+
+    // PWA install prompt — fires when Chrome/Safari prompts to add to home screen
+    window.addEventListener('beforeinstallprompt', () => {
+        logEvent('pwa_install_prompted', {});
+    });
+    window.addEventListener('appinstalled', () => {
+        logEvent('pwa_installed', {});
+    });
 
 }); // end DOMContentLoaded
