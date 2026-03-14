@@ -67,23 +67,29 @@ window.onload = async () => {
 };
 
 // Fetch all card IDs and default-select them all on first run.
-// On subsequent visits, localStorage already has the user's saved selection.
+// On subsequent visits, localStorage has the user's saved selection.
+// IMPORTANT: also treat an empty saved array as a first run — the old app version
+// could write [] to localStorage before any cards were loaded, poisoning the cache.
 async function initializeCardSelections() {
     const saved = localStorage.getItem('selectedCards');
-    if (saved) {
-        // User has a saved preference — load it into memory
-        selectedCardIds = JSON.parse(saved);
+    const parsed = saved ? JSON.parse(saved) : null;
+
+    if (parsed && parsed.length > 0) {
+        // Valid saved preference — load it into memory
+        selectedCardIds = parsed;
         return;
     }
-    // First run: fetch all cards and select them all by default
+
+    // First run (or stale empty array from old app version): fetch all cards
+    // and select them all by default
     try {
         const { data, error } = await supabase
             .from('credit_cards')
             .select('id');
         if (error) { console.error('Error initializing card selections:', error); return; }
-        creditCardsCache = null; // will be populated with full names when settings opens
         selectedCardIds = data.map(c => String(c.id));
         saveSelectedCards();
+        console.log(`Initialized with all ${selectedCardIds.length} cards selected.`);
     } catch (err) {
         console.error('Error initializing card selections:', err);
     }

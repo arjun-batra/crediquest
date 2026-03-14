@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crediquest-alpha-0.4';
+const CACHE_NAME = 'crediquest-alpha-0.4.1';
 const urlsToCache = [
     '/crediquest/',
     'index.html',
