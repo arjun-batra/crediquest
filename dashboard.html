@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrediQuest — Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── Reset & tokens ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:        #0a0f0a;
+    --bg-card:   #111811;
+    --bg-hover:  #182018;
+    --border:    #1e2a1e;
+    --border-hi: #2d402d;
+    --green:     #7bc428;
+    --green-dim: rgba(123,196,40,.12);
+    --green-lo:  rgba(123,196,40,.06);
+    --blue:      #1a5ca8;
+    --orange:    #f47920;
+    --text:      #d4eabc;
+    --text-2:    #6f8f58;
+    --text-3:    #3a5230;
+    --mono:      'DM Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+    --display:   'Syne', sans-serif;
+}
+
+body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+}
+
+/* ── Password gate ─────────────────────────────────────────────────────── */
+#gate {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+}
+.gate-box {
+    width: 100%; max-width: 380px;
+    padding: 40px 32px 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-hi);
+    border-radius: 20px;
+    text-align: center;
+    animation: fadeUp .3s ease both;
+}
+.gate-logo {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -.03em; color: var(--green);
+    margin-bottom: 4px;
+}
+.gate-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+.gate-label {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-3); letter-spacing: .1em;
+    text-transform: uppercase; margin-bottom: 8px;
+    text-align: left;
+}
+.gate-input {
+    width: 100%; padding: 13px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--border-hi);
+    border-radius: 10px;
+    color: var(--text);
+    /* id + name so 1Password recognises this as a password field and autofills */
+    font-family: var(--mono); font-size: 16px;
+    letter-spacing: .08em; outline: none;
+    margin-bottom: 14px;
+    transition: border-color .15s;
+    -webkit-text-security: disc;
+}
+.gate-input:focus { border-color: var(--green); }
+.gate-btn {
+    width: 100%; padding: 13px;
+    background: var(--green); color: #000;
+    border: none; border-radius: 10px;
+    font-family: var(--sans); font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: background .15s;
+    letter-spacing: -.01em;
+}
+.gate-btn:hover  { background: #5e9a1e; }
+.gate-btn:active { background: #4a7a16; }
+.gate-error {
+    margin-top: 12px; font-size: 13px;
+    color: #e87; display: none; font-family: var(--mono);
+}
+.gate-hint {
+    margin-top: 14px; font-size: 11px;
+    color: var(--text-3); font-family: var(--mono);
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+/* App hidden until password is verified */
+#app { display: none; }
+#app.visible { display: block; animation: fadeUp .35s ease both; }
+
+.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,15,10,.92);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 10;
+}
+.topbar-brand {
+    display: flex; align-items: center; gap: 12px;
+}
+.topbar-title {
+    font-family: var(--display); font-size: 18px; font-weight: 800;
+    color: var(--text); letter-spacing: -.02em;
+}
+.topbar-tag {
+    font-family: var(--mono); font-size: 10px;
+    padding: 3px 8px;
+    background: var(--green-dim); border: 1px solid rgba(123,196,40,.3);
+    border-radius: 4px; color: var(--green); letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.period-btns { display: flex; gap: 4px; }
+.period-btn {
+    padding: 6px 14px;
+    background: transparent; border: 1px solid var(--border-hi);
+    border-radius: 6px; color: var(--text-2);
+    font-family: var(--mono); font-size: 12px;
+    cursor: pointer; transition: all .15s;
+}
+.period-btn.active, .period-btn:hover {
+    background: var(--green-dim); border-color: var(--green);
+    color: var(--green);
+}
+
+.content { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+/* ── KPI row ──────────────────────────────────────────────────────────── */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
+}
+.kpi-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 22px;
+    transition: border-color .2s;
+    animation: fadeUp .4s ease both;
+}
+.kpi-card:hover { border-color: var(--border-hi); }
+.kpi-label {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-3); letter-spacing: .1em;
+    text-transform: uppercase; margin-bottom: 10px;
+}
+.kpi-value {
+    font-family: var(--display); font-size: 36px;
+    font-weight: 800; color: var(--green);
+    letter-spacing: -.04em; line-height: 1;
+}
+.kpi-sub {
+    font-size: 12px; color: var(--text-2); margin-top: 6px;
+}
+
+/* ── Grid layout for charts ───────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-full { margin-bottom: 16px; }
+
+.chart-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 24px;
+    animation: fadeUp .45s ease both;
+}
+.chart-title {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-2); letter-spacing: .08em;
+    text-transform: uppercase; margin-bottom: 18px;
+}
+.chart-wrap { position: relative; }
+.chart-wrap canvas { display: block; }
+
+/* ── Bar lists (top categories, stores, cards) ────────────────────────── */
+.bar-list { display: flex; flex-direction: column; gap: 10px; }
+.bar-item { display: flex; align-items: center; gap: 10px; }
+.bar-rank {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-3); width: 18px; text-align: right; flex-shrink: 0;
+}
+.bar-label {
+    font-size: 13px; font-weight: 500; color: var(--text);
+    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bar-track { flex: 2; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width .6s cubic-bezier(.4,0,.2,1); }
+.bar-count { font-family: var(--mono); font-size: 12px; color: var(--text-2); flex-shrink: 0; }
+
+/* ── Donut charts ─────────────────────────────────────────────────────── */
+.donut-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.donut-wrap { position: relative; max-height: 160px; }
+
+/* ── Split stat rows ──────────────────────────────────────────────────── */
+.split-row { display: flex; flex-direction: column; gap: 12px; }
+.split-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.split-label { font-size: 13px; color: var(--text); font-weight: 500; }
+.split-bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.split-bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.split-val { font-family: var(--mono); font-size: 12px; color: var(--text-2); min-width: 28px; text-align: right; }
+
+/* ── Device icons ─────────────────────────────────────────────────────── */
+.device-row { display: flex; flex-direction: column; gap: 12px; }
+.device-item { display: flex; align-items: center; gap: 10px; }
+.device-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+.device-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; text-transform: capitalize; }
+.device-pct { font-family: var(--mono); font-size: 13px; color: var(--green); }
+.device-count { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+
+/* ── Loading shimmer ──────────────────────────────────────────────────── */
+.shimmer {
+    background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
+    background-size: 400px 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px; height: 20px;
+}
+@keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.empty {
+    text-align: center; padding: 32px 16px;
+    color: var(--text-3); font-size: 13px; font-family: var(--mono);
+}
+.empty span { display: block; font-size: 28px; margin-bottom: 10px; }
+
+/* ── Animations ───────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .content { padding: 20px 16px; }
+    .topbar { padding: 16px; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .kpi-value { font-size: 28px; }
+}
+@media (max-width: 500px) {
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .period-btn span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Password gate ── -->
+<!--
+    1Password compatibility notes:
+    • id="password" + name="password" → 1Password recognises this as a password field
+    • autocomplete="current-password"  → browser/1Password autofill hint
+    • The form has id="login-form" so 1Password associates user+pass as a login item
+    • Save as a Login item in 1Password with URL set to your dashboard URL
+-->
+<div id="gate">
+    <div class="gate-box">
+        <div class="gate-logo">CrediQuest</div>
+        <p class="gate-sub">Analytics Dashboard</p>
+        <form id="login-form" autocomplete="on" onsubmit="return false">
+            <p class="gate-label">Password</p>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                class="gate-input"
+                placeholder="Enter password"
+                autocomplete="current-password"
+                autofocus
+            >
+            <button type="submit" class="gate-btn" id="pw-btn">Unlock dashboard</button>
+        </form>
+        <p class="gate-error" id="pw-error">Incorrect password — try again</p>
+        <p class="gate-hint">💡 Save this URL as a Login in 1Password</p>
+    </div>
+</div>
+
+<!-- ── Dashboard ── -->
+<div id="app">
+    <nav class="topbar">
+        <div class="topbar-brand">
+            <span class="topbar-title">CrediQuest Analytics</span>
+            <span class="topbar-tag">Live</span>
+        </div>
+        <div class="period-btns">
+            <button class="period-btn" data-days="7">7d</button>
+            <button class="period-btn active" data-days="30">30d</button>
+            <button class="period-btn" data-days="90">90d</button>
+        </div>
+    </nav>
+
+    <div class="content">
+
+        <!-- KPIs -->
+        <div class="kpi-row" id="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Sessions</div><div class="kpi-value" id="kpi-sessions">—</div><div class="kpi-sub">unique browser sessions</div></div>
+            <div class="kpi-card"><div class="kpi-label">Searches</div><div class="kpi-value" id="kpi-searches">—</div><div class="kpi-sub">category + store lookups</div></div>
+            <div class="kpi-card"><div class="kpi-label">Results viewed</div><div class="kpi-value" id="kpi-results">—</div><div class="kpi-sub">card comparisons opened</div></div>
+            <div class="kpi-card"><div class="kpi-label">PWA installs</div><div class="kpi-value" id="kpi-installs">—</div><div class="kpi-sub">added to home screen</div></div>
+        </div>
+
+        <!-- Row: daily sessions chart + search method split + toggle usage -->
+        <div class="grid-3">
+            <div class="chart-card">
+                <div class="chart-title">Daily sessions</div>
+                <div class="chart-wrap" style="height:180px">
+                    <canvas id="chart-daily"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Search method</div>
+                <div class="split-row" id="search-split">
+                    <div class="shimmer"></div><div class="shimmer"></div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Results view mode</div>
+                <div class="split-row" id="toggle-split">
+                    <div class="shimmer"></div><div class="shimmer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row: top categories + top cards -->
+        <div class="grid-2">
+            <div class="chart-card">
+                <div class="chart-title">Top searched categories</div>
+                <div class="bar-list" id="top-categories">
+                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Top winning cards</div>
+                <div class="bar-list" id="top-cards">
+                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row: top stores + device + tangerine -->
+        <div class="grid-3">
+            <div class="chart-card">
+                <div class="chart-title">Top searched stores</div>
+                <div class="bar-list" id="top-stores">
+                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Device type</div>
+                <div class="device-row" id="device-breakdown">
+                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">🍊 Tangerine bonus categories</div>
+                <div class="bar-list" id="tangerine-cats">
+                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://yaqarscylnpmmbllfwxw.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhcWFyc2N5bG5wbW1ibGxmd3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzOTQ5MDIsImV4cCI6MjA0Nzk3MDkwMn0.KuYXx8b-5MKDLmW6DfoG5lyMZPwFMROlbnDC-vJZDd8';
+
+// ── Supabase init ───────────────────────────────────────────────────────────
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── Chart.js global defaults ────────────────────────────────────────────────
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#6f8f58';
+
+let dailyChart = null;
+let activeDays = 30;
+
+// ── Period toggle ───────────────────────────────────────────────────────────
+document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeDays = Number(btn.dataset.days);
+        loadAll(activeDays);
+    });
+});
+
+// ── RPC helper ──────────────────────────────────────────────────────────────
+async function rpc(fn, params = {}) {
+    try {
+        const { data, error } = await sb.rpc(fn, params);
+        if (error) { console.error('[dash]', fn, error.message); return null; }
+        return data;
+    } catch (e) {
+        // Catches network errors including CORS failures
+        console.error('[dash] network error on', fn, e.message);
+        return null;
+    }
+}
+
+// ── Render helpers ──────────────────────────────────────────────────────────
+function fmt(n) {
+    if (n === null || n === undefined) return '—';
+    return n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+}
+
+function renderBarList(containerId, rows, labelKey, countKey, accent = '#7bc428') {
+    const el = document.getElementById(containerId);
+    if (!rows || rows.length === 0) {
+        el.innerHTML = '<div class="empty"><span>📭</span>No data yet</div>';
+        return;
+    }
+    const max = Math.max(...rows.map(r => Number(r[countKey]) || 0));
+    el.innerHTML = rows.map((r, i) => `
+        <div class="bar-item">
+            <span class="bar-rank">${i + 1}</span>
+            <span class="bar-label" title="${r[labelKey] || '—'}">${r[labelKey] || '—'}</span>
+            <div class="bar-track">
+                <div class="bar-fill" style="width:${max ? Math.round((r[countKey] / max) * 100) : 0}%;background:${accent}"></div>
+            </div>
+            <span class="bar-count">${r[countKey]}</span>
+        </div>
+    `).join('');
+}
+
+function renderSplitRow(containerId, items) {
+    const el = document.getElementById(containerId);
+    const total = items.reduce((s, i) => s + i.value, 0);
+    if (total === 0) { el.innerHTML = '<div class="empty">No data yet</div>'; return; }
+    el.innerHTML = items.map(item => `
+        <div class="split-item">
+            <span class="split-label">${item.label}</span>
+            <div class="split-bar-track">
+                <div class="split-bar-fill" style="width:${Math.round((item.value / total) * 100)}%;background:${item.color}"></div>
+            </div>
+            <span class="split-val">${item.value}</span>
+        </div>
+    `).join('');
+}
+
+const deviceIcons = { pwa: '📱', mobile: '📱', tablet: '⬛', desktop: '🖥️', unknown: '❓' };
+
+function renderDevices(data) {
+    const el = document.getElementById('device-breakdown');
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No data yet</div>'; return; }
+    const total = data.reduce((s, d) => s + Number(d.sessions), 0);
+    el.innerHTML = data.map(d => `
+        <div class="device-item">
+            <span class="device-icon">${deviceIcons[d.device_type] || '❓'}</span>
+            <span class="device-name">${d.device_type}</span>
+            <span class="device-pct">${total ? Math.round((d.sessions / total) * 100) : 0}%</span>
+            <span class="device-count">${d.sessions}</span>
+        </div>
+    `).join('');
+}
+
+function renderDailyChart(data) {
+    const canvas = document.getElementById('chart-daily');
+    if (!data || data.length === 0) {
+        canvas.parentElement.innerHTML = '<div class="empty"><span>📈</span>No data yet</div>';
+        return;
+    }
+
+    const labels   = data.map(d => d.day);
+    const sessions = data.map(d => Number(d.sessions));
+
+    if (dailyChart) dailyChart.destroy();
+
+    dailyChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data: sessions,
+                backgroundColor: 'rgba(123,196,40,.25)',
+                borderColor:     '#7bc428',
+                borderWidth:     1,
+                borderRadius:    3,
+                hoverBackgroundColor: 'rgba(123,196,40,.45)',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#111811',
+                    borderColor: '#2d402d',
+                    borderWidth: 1,
+                    titleColor: '#7bc428',
+                    bodyColor: '#d4eabc',
+                    callbacks: {
+                        title: items => items[0].label,
+                        label: item => ` ${item.raw} sessions`,
+                    }
+                },
+            },
+            scales: {
+                x: {
+                    grid:   { color: 'rgba(255,255,255,.04)' },
+                    ticks:  { color: '#3a5230', maxTicksLimit: 8, maxRotation: 0 },
+                    border: { color: '#1e2a1e' },
+                },
+                y: {
+                    grid:         { color: 'rgba(255,255,255,.04)' },
+                    ticks:        { color: '#3a5230', stepSize: 1 },
+                    border:       { color: '#1e2a1e' },
+                    beginAtZero:  true,
+                }
+            }
+        }
+    });
+}
+
+// ── Load all data ───────────────────────────────────────────────────────────
+async function loadAll(days) {
+    // Reset KPIs and clear any prior error banner
+    ['kpi-sessions','kpi-searches','kpi-results','kpi-installs'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+    });
+    const existingBanner = document.getElementById('error-banner');
+    if (existingBanner) existingBanner.remove();
+
+    let anyError = false;
+
+    // Fire all 9 RPCs in parallel
+    const [kpis, daily, cats, stores, cards, devices, tangerine, toggle, split] = await Promise.all([
+        rpc('get_dashboard_kpis',         { days_back: days }),
+        rpc('get_daily_sessions',         { days_back: days }),
+        rpc('get_top_categories',         { days_back: days, lmt: 8 }),
+        rpc('get_top_stores',             { days_back: days, lmt: 8 }),
+        rpc('get_top_cards',              { days_back: days, lmt: 8 }),
+        rpc('get_device_breakdown',       { days_back: days }),
+        rpc('get_tangerine_categories',   { days_back: days }),
+        rpc('get_toggle_usage',           { days_back: days }),
+        rpc('get_search_method_split',    { days_back: days }),
+    ]);
+
+    if ([kpis, daily, cats, stores, cards, devices, tangerine, toggle, split].some(r => r === null)) {
+        anyError = true;
+    }
+
+    // KPIs
+    if (kpis) {
+        document.getElementById('kpi-sessions').textContent  = fmt(kpis.total_sessions);
+        document.getElementById('kpi-searches').textContent  = fmt(kpis.total_searches);
+        document.getElementById('kpi-results').textContent   = fmt(kpis.total_results);
+        document.getElementById('kpi-installs').textContent  = fmt(kpis.pwa_installs);
+    }
+
+    // Daily sessions chart
+    renderDailyChart(daily || []);
+
+    // Search method split — always render, fallback to zeros if null
+    renderSplitRow('search-split', [
+        { label: 'By category', value: split ? (split.category     || 0) : 0, color: '#7bc428' },
+        { label: 'By store',    value: split ? (split.store        || 0) : 0, color: '#1a5ca8' },
+        { label: 'No results',  value: split ? (split.zero_results || 0) : 0, color: '#f47920' },
+    ]);
+
+    // View mode toggle — always render, fallback to zeros if null
+    renderSplitRow('toggle-split', [
+        { label: 'Multiplier', value: toggle ? (toggle.multiplier || 0) : 0, color: '#7bc428' },
+        { label: '¢ per $1',   value: toggle ? (toggle.per_dollar || 0) : 0, color: '#f47920' },
+    ]);
+
+    // Bar lists — pass empty array if null, render functions handle it
+    renderBarList('top-categories', cats      || [], 'category',  'searches', '#7bc428');
+    renderBarList('top-stores',     stores    || [], 'store',     'searches', '#1a5ca8');
+    renderBarList('top-cards',      cards     || [], 'card',      'times_top','#7bc428');
+    renderBarList('tangerine-cats', tangerine || [], 'cat_name',  'picks',    '#f47920');
+
+    // Devices
+    renderDevices(devices || []);
+
+    // Show a non-blocking error notice if any RPC failed
+    if (anyError) {
+        const banner = document.createElement('div');
+        banner.id = 'error-banner';
+        banner.style.cssText = `
+            margin: 0 0 16px;
+            padding: 12px 16px;
+            background: rgba(200,50,50,.12);
+            border: 1px solid rgba(200,50,50,.3);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: #e87;
+        `;
+        banner.textContent = '⚠ One or more data sources failed to load. Panels showing "No data yet" may be temporarily unavailable — refresh to retry.';
+        document.querySelector('.content').prepend(banner);
+    }
+}
+
+function initDashboard() {
+    loadAll(activeDays);
+}
+
+// ── Password gate logic ─────────────────────────────────────────────────────
+// SHA-256 of the dashboard password.
+// To change the password: run `echo -n "newpassword" | sha256sum` in Terminal
+// and replace the hash below. Store the password in 1Password as a Login item
+// with this page's URL so it autofills on next visit.
+//
+// Current password: crediquest2025
+const PW_HASH = '3a9399b1f48191961d5e6a0f217295da6390dcff124ff6383ee7e3b5e1d68ed3';
+
+async function sha256(str) {
+    const buf = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(str)
+    );
+    return Array.from(new Uint8Array(buf))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+function unlock() {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    initDashboard();
+}
+
+// Stay unlocked for the session — no re-prompt on reload
+if (sessionStorage.getItem('cq_dash_unlocked') === '1') {
+    unlock();
+} else {
+    const pwInput = document.getElementById('password');
+    const pwBtn   = document.getElementById('pw-btn');
+    const pwError = document.getElementById('pw-error');
+    const form    = document.getElementById('login-form');
+
+    async function attemptUnlock() {
+        const hash = await sha256(pwInput.value);
+        if (hash === PW_HASH) {
+            sessionStorage.setItem('cq_dash_unlocked', '1');
+            unlock();
+        } else {
+            pwError.style.display = 'block';
+            pwInput.value = '';
+            pwInput.focus();
+            // Shake animation
+            pwInput.style.animation = 'none';
+            pwInput.offsetHeight; // reflow
+            pwInput.style.animation = 'shake .35s ease';
+            setTimeout(() => { pwError.style.display = 'none'; }, 3000);
+        }
+    }
+
+    form.addEventListener('submit', attemptUnlock);
+    pwBtn.addEventListener('click', attemptUnlock);
+    pwInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); attemptUnlock(); }
+    });
+}
+</script>
+
+<style>
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60%  { transform: translateX(-6px); }
+    40%,80%  { transform: translateX(6px); }
+}
+</style>
+</body>
+</html>
