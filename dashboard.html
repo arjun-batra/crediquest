@@ -496,7 +496,6 @@ body {
             <button type="submit" class="gate-btn" id="pw-btn">Continue →</button>
         </form>
         <p class="gate-error" id="pw-error">Incorrect password — try again</p>
-        <p class="gate-hint">Tip: save as a Login in 1Password with this URL</p>
     </div>
 </div>
 
@@ -835,7 +834,7 @@ function initDashboard() { loadAll(activeDays); }
 // ── Password gate ────────────────────────────────────────────────────────────
 // SHA-256 of "crediquest2025"
 // To change: run `echo -n "newpassword" | sha256sum` and update the hash
-const PW_HASH = '3a9399b1f48191961d5e6a0f217295da6390dcff124ff6383ee7e3b5e1d68ed3';
+const PW_HASH = 'b9e8a4b2a66942e36df89b44041ea2e0ec3f536ced01c2919af65986d4f8a3c7';
 
 async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
