@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport-fit=cover is essential for iOS safe area insets -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- viewport-fit=cover is essential for iOS safe area insets. user-scalable=no disables pinch zoom. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CrediQuest</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,7 +96,7 @@
 
     <!-- ── Footer ── -->
     <footer class="footer">
-        <p class="footer-credit">Made with ♥ by Arjun &nbsp;·&nbsp; <span class="footer-version">v0.5</span></p>
+        <p class="footer-credit">Vibe Coded ❤️ by Arjun &nbsp;·&nbsp; <span class="footer-version">v0.5</span></p>
         <p class="footer-disclaimer">For informational purposes only. All trademarks belong to their respective owners. Not affiliated with any merchant or card issuer.</p>
     </footer>
 
@@ -117,6 +117,11 @@
                 <button class="modal-x" data-close="results-modal" aria-label="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
+            </div>
+            <!-- Value mode toggle: switch between raw multiplier and per-dollar return -->
+            <div class="results-toggle-row">
+                <button class="results-toggle-btn active" id="toggle-multiplier">Multiplier</button>
+                <button class="results-toggle-btn" id="toggle-per-dollar">¢ per $1</button>
             </div>
             <!-- This div scrolls independently -->
             <div class="modal-body" id="results-list"></div>
