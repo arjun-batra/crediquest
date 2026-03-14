@@ -5,375 +5,621 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CrediQuest — Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ── Reset & tokens ───────────────────────────────────────────────────── */
+/* ── Reset ──────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
 :root {
-    --bg:        #0a0f0a;
-    --bg-card:   #111811;
-    --bg-hover:  #182018;
-    --border:    #1e2a1e;
-    --border-hi: #2d402d;
-    --green:     #7bc428;
-    --green-dim: rgba(123,196,40,.12);
-    --green-lo:  rgba(123,196,40,.06);
-    --blue:      #1a5ca8;
-    --orange:    #f47920;
-    --text:      #d4eabc;
-    --text-2:    #6f8f58;
-    --text-3:    #3a5230;
-    --mono:      'DM Mono', monospace;
-    --sans:      'DM Sans', sans-serif;
-    --display:   'Syne', sans-serif;
+    /* Surfaces */
+    --bg:        #f4f6f8;
+    --bg-card:   #ffffff;
+    --bg-hover:  #f8fafc;
+
+    /* Borders */
+    --border:    #e4e8ee;
+    --border-hi: #cbd3de;
+
+    /* Brand */
+    --green:       #5a9e1c;
+    --green-mid:   #7bc428;
+    --green-dim:   rgba(90,158,28,.09);
+    --blue:        #1a5ca8;
+    --blue-dim:    rgba(26,92,168,.09);
+    --orange:      #d9650e;
+    --orange-dim:  rgba(217,101,14,.09);
+    --red:         #dc2626;
+    --red-dim:     rgba(220,38,38,.08);
+
+    /* Text */
+    --text:     #0f172a;
+    --text-2:   #475569;
+    --text-3:   #94a3b8;
+
+    /* Type */
+    --sans: 'Plus Jakarta Sans', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+
+    /* Radius */
+    --r-sm:  8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+
+    /* Shadow */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04);
 }
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+html { -webkit-font-smoothing: antialiased; }
 
 body {
     font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    font-size: 14px;
     line-height: 1.5;
 }
 
-/* ── Password gate ─────────────────────────────────────────────────────── */
+/* ── Password gate ──────────────────────────────────────────────────────── */
 #gate {
     position: fixed; inset: 0; z-index: 999;
     background: var(--bg);
     display: flex; align-items: center; justify-content: center;
     padding: 24px;
 }
+
 .gate-box {
-    width: 100%; max-width: 380px;
-    padding: 40px 32px 36px;
+    width: 100%; max-width: 400px;
+    padding: 48px 40px 40px;
     background: var(--bg-card);
-    border: 1px solid var(--border-hi);
+    border: 1px solid var(--border);
     border-radius: 20px;
-    text-align: center;
+    box-shadow: var(--shadow-md);
     animation: fadeUp .3s ease both;
 }
-.gate-logo {
-    font-family: var(--display);
-    font-size: 22px; font-weight: 800;
-    letter-spacing: -.03em; color: var(--green);
-    margin-bottom: 4px;
+
+.gate-wordmark {
+    display: flex; align-items: center; gap: 10px;
+    justify-content: center; margin-bottom: 6px;
 }
-.gate-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
-.gate-label {
-    font-family: var(--mono); font-size: 10px;
-    color: var(--text-3); letter-spacing: .1em;
-    text-transform: uppercase; margin-bottom: 8px;
-    text-align: left;
+
+.gate-wordmark-dot {
+    width: 28px; height: 28px;
+    background: var(--green-mid);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #fff;
+    font-family: var(--sans);
 }
+
+.gate-wordmark-text {
+    font-size: 18px; font-weight: 800;
+    color: var(--text); letter-spacing: -.03em;
+}
+
+.gate-sub {
+    text-align: center; font-size: 13px;
+    color: var(--text-2); margin-bottom: 36px;
+}
+
+.gate-field { margin-bottom: 12px; }
+
+.gate-field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--text-2); margin-bottom: 6px; letter-spacing: .02em;
+}
+
 .gate-input {
-    width: 100%; padding: 13px 16px;
+    width: 100%; padding: 11px 14px;
     background: var(--bg);
-    border: 1.5px solid var(--border-hi);
-    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
     color: var(--text);
-    /* id + name so 1Password recognises this as a password field and autofills */
-    font-family: var(--mono); font-size: 16px;
-    letter-spacing: .08em; outline: none;
-    margin-bottom: 14px;
-    transition: border-color .15s;
-    -webkit-text-security: disc;
+    font-family: var(--mono); font-size: 15px;
+    letter-spacing: .06em; outline: none;
+    transition: border-color .15s, box-shadow .15s;
 }
-.gate-input:focus { border-color: var(--green); }
+
+.gate-input:focus {
+    border-color: var(--green-mid);
+    box-shadow: 0 0 0 3px rgba(123,196,40,.15);
+}
+
 .gate-btn {
-    width: 100%; padding: 13px;
-    background: var(--green); color: #000;
-    border: none; border-radius: 10px;
-    font-family: var(--sans); font-size: 15px; font-weight: 800;
-    cursor: pointer; transition: background .15s;
-    letter-spacing: -.01em;
+    width: 100%; padding: 12px;
+    background: var(--green);
+    color: #fff;
+    border: none; border-radius: var(--r-sm);
+    font-family: var(--sans); font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: background .15s, transform .1s;
+    margin-top: 4px; letter-spacing: .01em;
 }
-.gate-btn:hover  { background: #5e9a1e; }
-.gate-btn:active { background: #4a7a16; }
+
+.gate-btn:hover  { background: #4a8516; }
+.gate-btn:active { transform: scale(.99); }
+
 .gate-error {
-    margin-top: 12px; font-size: 13px;
-    color: #e87; display: none; font-family: var(--mono);
+    margin-top: 10px; font-size: 12px; font-family: var(--mono);
+    color: var(--red); text-align: center; display: none;
 }
+
 .gate-hint {
-    margin-top: 14px; font-size: 11px;
+    margin-top: 20px; font-size: 11px; text-align: center;
     color: var(--text-3); font-family: var(--mono);
 }
 
-/* ── Layout ───────────────────────────────────────────────────────────── */
-/* App hidden until password is verified */
+/* ── App ────────────────────────────────────────────────────────────────── */
 #app { display: none; }
-#app.visible { display: block; animation: fadeUp .35s ease both; }
+#app.visible { display: block; animation: fadeUp .3s ease both; }
 
+/* ── Topbar ─────────────────────────────────────────────────────────────── */
 .topbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 32px;
+    padding: 0 32px; height: 60px;
+    background: var(--bg-card);
     border-bottom: 1px solid var(--border);
-    background: rgba(10,15,10,.92);
-    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
     position: sticky; top: 0; z-index: 10;
 }
-.topbar-brand {
-    display: flex; align-items: center; gap: 12px;
+
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+
+.topbar-dot {
+    width: 26px; height: 26px;
+    background: var(--green-mid);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff;
 }
+
 .topbar-title {
-    font-family: var(--display); font-size: 18px; font-weight: 800;
+    font-size: 15px; font-weight: 700;
     color: var(--text); letter-spacing: -.02em;
 }
-.topbar-tag {
-    font-family: var(--mono); font-size: 10px;
-    padding: 3px 8px;
-    background: var(--green-dim); border: 1px solid rgba(123,196,40,.3);
-    border-radius: 4px; color: var(--green); letter-spacing: .05em;
-    text-transform: uppercase;
+
+.topbar-divider {
+    width: 1px; height: 20px;
+    background: var(--border); margin: 0 12px;
 }
 
-.period-btns { display: flex; gap: 4px; }
+.topbar-sub {
+    font-size: 13px; color: var(--text-2); font-weight: 500;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+
+.live-badge {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    background: var(--green-dim);
+    border: 1px solid rgba(90,158,28,.2);
+    border-radius: 100px;
+    font-size: 11px; font-weight: 600;
+    color: var(--green); letter-spacing: .03em;
+    font-family: var(--mono);
+}
+
+.live-dot {
+    width: 6px; height: 6px;
+    background: var(--green-mid);
+    border-radius: 50%;
+    animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .4; }
+}
+
+.period-btns {
+    display: flex; gap: 2px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 3px;
+}
+
 .period-btn {
-    padding: 6px 14px;
-    background: transparent; border: 1px solid var(--border-hi);
+    padding: 5px 14px;
+    background: transparent; border: none;
     border-radius: 6px; color: var(--text-2);
-    font-family: var(--mono); font-size: 12px;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
     cursor: pointer; transition: all .15s;
 }
-.period-btn.active, .period-btn:hover {
-    background: var(--green-dim); border-color: var(--green);
-    color: var(--green);
+
+.period-btn.active {
+    background: var(--bg-card);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
 }
 
-.content { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+.period-btn:not(.active):hover { color: var(--text); }
 
-/* ── KPI row ──────────────────────────────────────────────────────────── */
+/* ── Content ────────────────────────────────────────────────────────────── */
+.content {
+    padding: 28px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ── Section headings ───────────────────────────────────────────────────── */
+.section-heading {
+    font-size: 11px; font-weight: 600;
+    color: var(--text-3); letter-spacing: .08em;
+    text-transform: uppercase; margin-bottom: 12px;
+}
+
+/* ── KPI row ────────────────────────────────────────────────────────────── */
 .kpi-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px; margin-bottom: 28px;
+    gap: 14px; margin-bottom: 24px;
 }
+
 .kpi-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px 22px;
-    transition: border-color .2s;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 22px 24px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .2s, border-color .2s;
+    animation: fadeUp .35s ease both;
+}
+
+.kpi-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-hi);
+}
+
+.kpi-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 14px;
+}
+
+.kpi-icon--green  { background: var(--green-dim); }
+.kpi-icon--blue   { background: var(--blue-dim); }
+.kpi-icon--orange { background: var(--orange-dim); }
+.kpi-icon--red    { background: var(--red-dim); }
+
+.kpi-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-2); margin-bottom: 6px;
+    letter-spacing: .01em;
+}
+
+.kpi-value {
+    font-size: 32px; font-weight: 800;
+    color: var(--text); letter-spacing: -.04em;
+    line-height: 1; font-family: var(--sans);
+}
+
+.kpi-sub {
+    font-size: 12px; color: var(--text-3);
+    margin-top: 5px; font-weight: 500;
+}
+
+/* ── Grid ───────────────────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+.chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 22px 24px;
+    box-shadow: var(--shadow-sm);
     animation: fadeUp .4s ease both;
 }
-.kpi-card:hover { border-color: var(--border-hi); }
-.kpi-label {
-    font-family: var(--mono); font-size: 10px;
-    color: var(--text-3); letter-spacing: .1em;
-    text-transform: uppercase; margin-bottom: 10px;
-}
-.kpi-value {
-    font-family: var(--display); font-size: 36px;
-    font-weight: 800; color: var(--green);
-    letter-spacing: -.04em; line-height: 1;
-}
-.kpi-sub {
-    font-size: 12px; color: var(--text-2); margin-top: 6px;
-}
 
-/* ── Grid layout for charts ───────────────────────────────────────────── */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.grid-full { margin-bottom: 16px; }
-
-.chart-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 22px 24px;
-    animation: fadeUp .45s ease both;
-}
 .chart-title {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text-2); letter-spacing: .08em;
-    text-transform: uppercase; margin-bottom: 18px;
+    font-size: 13px; font-weight: 700;
+    color: var(--text); margin-bottom: 18px;
+    letter-spacing: -.01em;
 }
+
+.chart-title-meta {
+    font-size: 11px; font-weight: 500;
+    color: var(--text-3); margin-left: 6px;
+    font-family: var(--mono);
+}
+
 .chart-wrap { position: relative; }
 .chart-wrap canvas { display: block; }
 
-/* ── Bar lists (top categories, stores, cards) ────────────────────────── */
-.bar-list { display: flex; flex-direction: column; gap: 10px; }
+/* ── Bar lists ──────────────────────────────────────────────────────────── */
+.bar-list { display: flex; flex-direction: column; gap: 11px; }
+
 .bar-item { display: flex; align-items: center; gap: 10px; }
+
 .bar-rank {
-    font-family: var(--mono); font-size: 11px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
     color: var(--text-3); width: 18px; text-align: right; flex-shrink: 0;
 }
+
 .bar-label {
-    font-size: 13px; font-weight: 500; color: var(--text);
+    font-size: 13px; font-weight: 600; color: var(--text);
     flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0;
 }
-.bar-track { flex: 2; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width .6s cubic-bezier(.4,0,.2,1); }
-.bar-count { font-family: var(--mono); font-size: 12px; color: var(--text-2); flex-shrink: 0; }
 
-/* ── Donut charts ─────────────────────────────────────────────────────── */
-.donut-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.donut-wrap { position: relative; max-height: 160px; }
-
-/* ── Split stat rows ──────────────────────────────────────────────────── */
-.split-row { display: flex; flex-direction: column; gap: 12px; }
-.split-item {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+.bar-track {
+    flex: 2; height: 5px;
+    background: var(--bg);
+    border-radius: 3px; overflow: hidden;
 }
-.split-label { font-size: 13px; color: var(--text); font-weight: 500; }
-.split-bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+
+.bar-fill {
+    height: 100%; border-radius: 3px;
+    transition: width .65s cubic-bezier(.4,0,.2,1);
+}
+
+.bar-count {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    color: var(--text-2); flex-shrink: 0; min-width: 24px; text-align: right;
+}
+
+/* ── Split rows ─────────────────────────────────────────────────────────── */
+.split-row { display: flex; flex-direction: column; gap: 13px; }
+
+.split-item { display: flex; align-items: center; gap: 10px; }
+
+.split-label { font-size: 13px; font-weight: 600; color: var(--text); min-width: 90px; }
+
+.split-bar-track {
+    flex: 1; height: 7px;
+    background: var(--bg);
+    border-radius: 4px; overflow: hidden;
+}
+
 .split-bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
-.split-val { font-family: var(--mono); font-size: 12px; color: var(--text-2); min-width: 28px; text-align: right; }
 
-/* ── Device icons ─────────────────────────────────────────────────────── */
+.split-val {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    color: var(--text-2); min-width: 28px; text-align: right;
+}
+
+/* ── Device breakdown ───────────────────────────────────────────────────── */
 .device-row { display: flex; flex-direction: column; gap: 12px; }
+
 .device-item { display: flex; align-items: center; gap: 10px; }
-.device-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
-.device-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; text-transform: capitalize; }
-.device-pct { font-family: var(--mono); font-size: 13px; color: var(--green); }
-.device-count { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
 
-/* ── Loading shimmer ──────────────────────────────────────────────────── */
+.device-icon {
+    font-size: 17px; width: 30px; text-align: center; flex-shrink: 0;
+}
+
+.device-name {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    flex: 1; text-transform: capitalize;
+}
+
+.device-pct {
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    color: var(--green); min-width: 36px; text-align: right;
+}
+
+.device-count {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-3); min-width: 28px; text-align: right;
+}
+
+/* ── Loading shimmer ────────────────────────────────────────────────────── */
 .shimmer {
-    background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
+    background: linear-gradient(90deg, var(--bg) 25%, #e8ecf0 50%, var(--bg) 75%);
     background-size: 400px 100%;
-    animation: shimmer 1.4s infinite;
-    border-radius: 6px; height: 20px;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px; height: 18px;
 }
-@keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
 
-/* ── Empty state ──────────────────────────────────────────────────────── */
+@keyframes shimmer {
+    from { background-position: -400px 0; }
+    to   { background-position:  400px 0; }
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
 .empty {
-    text-align: center; padding: 32px 16px;
-    color: var(--text-3); font-size: 13px; font-family: var(--mono);
+    text-align: center; padding: 28px 16px;
+    color: var(--text-3); font-size: 13px; font-weight: 500;
 }
-.empty span { display: block; font-size: 28px; margin-bottom: 10px; }
 
-/* ── Animations ───────────────────────────────────────────────────────── */
+.empty span { display: block; font-size: 24px; margin-bottom: 8px; }
+
+/* ── Error banner ───────────────────────────────────────────────────────── */
+.error-banner {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--red-dim);
+    border: 1px solid rgba(220,38,38,.2);
+    border-radius: var(--r-sm);
+    font-size: 13px; font-weight: 500;
+    color: var(--red);
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
+    from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60%  { transform: translateX(-5px); }
+    40%,80%  { transform: translateX(5px); }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
     .content { padding: 20px 16px; }
-    .topbar { padding: 16px; }
+    .topbar  { padding: 0 16px; }
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .kpi-value { font-size: 28px; }
+    .topbar-divider, .topbar-sub { display: none; }
 }
-@media (max-width: 500px) {
+
+@media (max-width: 540px) {
     .kpi-row { grid-template-columns: 1fr 1fr; }
-    .period-btn span { display: none; }
+    .kpi-value { font-size: 26px; }
 }
 </style>
 </head>
 <body>
 
 <!-- ── Password gate ── -->
-<!--
-    1Password compatibility notes:
-    • id="password" + name="password" → 1Password recognises this as a password field
-    • autocomplete="current-password"  → browser/1Password autofill hint
-    • The form has id="login-form" so 1Password associates user+pass as a login item
-    • Save as a Login item in 1Password with URL set to your dashboard URL
--->
 <div id="gate">
     <div class="gate-box">
-        <div class="gate-logo">CrediQuest</div>
-        <p class="gate-sub">Analytics Dashboard</p>
+        <div class="gate-wordmark">
+            <div class="gate-wordmark-dot">CQ</div>
+            <span class="gate-wordmark-text">CrediQuest</span>
+        </div>
+        <p class="gate-sub">Sign in to view analytics</p>
         <form id="login-form" autocomplete="on" onsubmit="return false">
-            <p class="gate-label">Password</p>
-            <input
-                type="password"
-                id="password"
-                name="password"
-                class="gate-input"
-                placeholder="Enter password"
-                autocomplete="current-password"
-                autofocus
-            >
-            <button type="submit" class="gate-btn" id="pw-btn">Unlock dashboard</button>
+            <div class="gate-field">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="gate-input"
+                    placeholder="••••••••••"
+                    autocomplete="current-password"
+                    autofocus
+                >
+            </div>
+            <button type="submit" class="gate-btn" id="pw-btn">Continue →</button>
         </form>
         <p class="gate-error" id="pw-error">Incorrect password — try again</p>
-        <p class="gate-hint">💡 Save this URL as a Login in 1Password</p>
+        <p class="gate-hint">Tip: save as a Login in 1Password with this URL</p>
     </div>
 </div>
 
 <!-- ── Dashboard ── -->
 <div id="app">
+
     <nav class="topbar">
         <div class="topbar-brand">
-            <span class="topbar-title">CrediQuest Analytics</span>
-            <span class="topbar-tag">Live</span>
+            <div class="topbar-dot">CQ</div>
+            <span class="topbar-title">CrediQuest</span>
+            <div class="topbar-divider"></div>
+            <span class="topbar-sub">Analytics</span>
         </div>
-        <div class="period-btns">
-            <button class="period-btn" data-days="7">7d</button>
-            <button class="period-btn active" data-days="30">30d</button>
-            <button class="period-btn" data-days="90">90d</button>
+        <div class="topbar-right">
+            <div class="live-badge">
+                <div class="live-dot"></div>
+                Live
+            </div>
+            <div class="period-btns">
+                <button class="period-btn" data-days="7">7d</button>
+                <button class="period-btn active" data-days="30">30d</button>
+                <button class="period-btn" data-days="90">90d</button>
+            </div>
         </div>
     </nav>
 
     <div class="content">
 
         <!-- KPIs -->
-        <div class="kpi-row" id="kpi-row">
-            <div class="kpi-card"><div class="kpi-label">Sessions</div><div class="kpi-value" id="kpi-sessions">—</div><div class="kpi-sub">unique browser sessions</div></div>
-            <div class="kpi-card"><div class="kpi-label">Searches</div><div class="kpi-value" id="kpi-searches">—</div><div class="kpi-sub">category + store lookups</div></div>
-            <div class="kpi-card"><div class="kpi-label">Results viewed</div><div class="kpi-value" id="kpi-results">—</div><div class="kpi-sub">card comparisons opened</div></div>
-            <div class="kpi-card"><div class="kpi-label">PWA installs</div><div class="kpi-value" id="kpi-installs">—</div><div class="kpi-sub">added to home screen</div></div>
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-icon kpi-icon--green">👥</div>
+                <div class="kpi-label">Sessions</div>
+                <div class="kpi-value" id="kpi-sessions">—</div>
+                <div class="kpi-sub">unique browser sessions</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon kpi-icon--blue">🔍</div>
+                <div class="kpi-label">Searches</div>
+                <div class="kpi-value" id="kpi-searches">—</div>
+                <div class="kpi-sub">category + store lookups</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon kpi-icon--orange">📊</div>
+                <div class="kpi-label">Results viewed</div>
+                <div class="kpi-value" id="kpi-results">—</div>
+                <div class="kpi-sub">card comparisons opened</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon kpi-icon--red">📲</div>
+                <div class="kpi-label">PWA installs</div>
+                <div class="kpi-value" id="kpi-installs">—</div>
+                <div class="kpi-sub">added to home screen</div>
+            </div>
         </div>
 
-        <!-- Row: daily sessions chart + search method split + toggle usage -->
+        <!-- Daily chart + splits -->
         <div class="grid-3">
             <div class="chart-card">
                 <div class="chart-title">Daily sessions</div>
-                <div class="chart-wrap" style="height:180px">
+                <div class="chart-wrap" style="height:176px">
                     <canvas id="chart-daily"></canvas>
                 </div>
             </div>
             <div class="chart-card">
                 <div class="chart-title">Search method</div>
                 <div class="split-row" id="search-split">
-                    <div class="shimmer"></div><div class="shimmer"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:4px"></div>
+                    <div class="shimmer" style="margin-top:4px"></div>
                 </div>
             </div>
             <div class="chart-card">
                 <div class="chart-title">Results view mode</div>
                 <div class="split-row" id="toggle-split">
-                    <div class="shimmer"></div><div class="shimmer"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:4px"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Row: top categories + top cards -->
+        <!-- Top categories + cards -->
         <div class="grid-2">
             <div class="chart-card">
-                <div class="chart-title">Top searched categories</div>
+                <div class="chart-title">Top searched categories <span class="chart-title-meta">by searches</span></div>
                 <div class="bar-list" id="top-categories">
-                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
                 </div>
             </div>
             <div class="chart-card">
-                <div class="chart-title">Top winning cards</div>
+                <div class="chart-title">Top winning cards <span class="chart-title-meta">by times #1</span></div>
                 <div class="bar-list" id="top-cards">
-                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Row: top stores + device + tangerine -->
+        <!-- Stores + device + tangerine -->
         <div class="grid-3">
             <div class="chart-card">
-                <div class="chart-title">Top searched stores</div>
+                <div class="chart-title">Top searched stores <span class="chart-title-meta">by searches</span></div>
                 <div class="bar-list" id="top-stores">
-                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
                 </div>
             </div>
             <div class="chart-card">
                 <div class="chart-title">Device type</div>
                 <div class="device-row" id="device-breakdown">
-                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
                 </div>
             </div>
             <div class="chart-card">
                 <div class="chart-title">🍊 Tangerine bonus categories</div>
                 <div class="bar-list" id="tangerine-cats">
-                    <div class="shimmer"></div><div class="shimmer" style="margin-top:8px"></div>
+                    <div class="shimmer"></div>
+                    <div class="shimmer" style="margin-top:6px"></div>
                 </div>
             </div>
         </div>
@@ -382,22 +628,20 @@ body {
 </div>
 
 <script>
-// ── Config ─────────────────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://yaqarscylnpmmbllfwxw.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhcWFyc2N5bG5wbW1ibGxmd3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzOTQ5MDIsImV4cCI6MjA0Nzk3MDkwMn0.KuYXx8b-5MKDLmW6DfoG5lyMZPwFMROlbnDC-vJZDd8';
 
-// ── Supabase init ───────────────────────────────────────────────────────────
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ── Chart.js global defaults ────────────────────────────────────────────────
-Chart.defaults.font.family = "'DM Mono', monospace";
+// ── Chart.js defaults (light theme) ─────────────────────────────────────────
+Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
 Chart.defaults.font.size   = 11;
-Chart.defaults.color       = '#6f8f58';
+Chart.defaults.color       = '#94a3b8';
 
 let dailyChart = null;
 let activeDays = 30;
 
-// ── Period toggle ───────────────────────────────────────────────────────────
+// ── Period toggle ────────────────────────────────────────────────────────────
 document.querySelectorAll('.period-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
@@ -407,26 +651,25 @@ document.querySelectorAll('.period-btn').forEach(btn => {
     });
 });
 
-// ── RPC helper ──────────────────────────────────────────────────────────────
+// ── RPC helper ───────────────────────────────────────────────────────────────
 async function rpc(fn, params = {}) {
     try {
         const { data, error } = await sb.rpc(fn, params);
         if (error) { console.error('[dash]', fn, error.message); return null; }
         return data;
     } catch (e) {
-        // Catches network errors including CORS failures
-        console.error('[dash] network error on', fn, e.message);
+        console.error('[dash] network error', fn, e.message);
         return null;
     }
 }
 
-// ── Render helpers ──────────────────────────────────────────────────────────
+// ── Render helpers ───────────────────────────────────────────────────────────
 function fmt(n) {
     if (n === null || n === undefined) return '—';
     return n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
 }
 
-function renderBarList(containerId, rows, labelKey, countKey, accent = '#7bc428') {
+function renderBarList(containerId, rows, labelKey, countKey, color) {
     const el = document.getElementById(containerId);
     if (!rows || rows.length === 0) {
         el.innerHTML = '<div class="empty"><span>📭</span>No data yet</div>';
@@ -438,7 +681,7 @@ function renderBarList(containerId, rows, labelKey, countKey, accent = '#7bc428'
             <span class="bar-rank">${i + 1}</span>
             <span class="bar-label" title="${r[labelKey] || '—'}">${r[labelKey] || '—'}</span>
             <div class="bar-track">
-                <div class="bar-fill" style="width:${max ? Math.round((r[countKey] / max) * 100) : 0}%;background:${accent}"></div>
+                <div class="bar-fill" style="width:${max ? Math.round((r[countKey]/max)*100) : 0}%;background:${color}"></div>
             </div>
             <span class="bar-count">${r[countKey]}</span>
         </div>
@@ -446,21 +689,21 @@ function renderBarList(containerId, rows, labelKey, countKey, accent = '#7bc428'
 }
 
 function renderSplitRow(containerId, items) {
-    const el = document.getElementById(containerId);
+    const el    = document.getElementById(containerId);
     const total = items.reduce((s, i) => s + i.value, 0);
     if (total === 0) { el.innerHTML = '<div class="empty">No data yet</div>'; return; }
     el.innerHTML = items.map(item => `
         <div class="split-item">
             <span class="split-label">${item.label}</span>
             <div class="split-bar-track">
-                <div class="split-bar-fill" style="width:${Math.round((item.value / total) * 100)}%;background:${item.color}"></div>
+                <div class="split-bar-fill" style="width:${Math.round((item.value/total)*100)}%;background:${item.color}"></div>
             </div>
             <span class="split-val">${item.value}</span>
         </div>
     `).join('');
 }
 
-const deviceIcons = { pwa: '📱', mobile: '📱', tablet: '⬛', desktop: '🖥️', unknown: '❓' };
+const deviceIcons = { pwa:'📱', mobile:'📱', tablet:'⬛', desktop:'🖥️', unknown:'❓' };
 
 function renderDevices(data) {
     const el = document.getElementById('device-breakdown');
@@ -470,7 +713,7 @@ function renderDevices(data) {
         <div class="device-item">
             <span class="device-icon">${deviceIcons[d.device_type] || '❓'}</span>
             <span class="device-name">${d.device_type}</span>
-            <span class="device-pct">${total ? Math.round((d.sessions / total) * 100) : 0}%</span>
+            <span class="device-pct">${total ? Math.round((d.sessions/total)*100) : 0}%</span>
             <span class="device-count">${d.sessions}</span>
         </div>
     `).join('');
@@ -482,23 +725,18 @@ function renderDailyChart(data) {
         canvas.parentElement.innerHTML = '<div class="empty"><span>📈</span>No data yet</div>';
         return;
     }
-
-    const labels   = data.map(d => d.day);
-    const sessions = data.map(d => Number(d.sessions));
-
     if (dailyChart) dailyChart.destroy();
-
     dailyChart = new Chart(canvas, {
         type: 'bar',
         data: {
-            labels,
+            labels: data.map(d => d.day),
             datasets: [{
-                data: sessions,
-                backgroundColor: 'rgba(123,196,40,.25)',
+                data: data.map(d => Number(d.sessions)),
+                backgroundColor: 'rgba(90,158,28,.12)',
                 borderColor:     '#7bc428',
-                borderWidth:     1,
-                borderRadius:    3,
-                hoverBackgroundColor: 'rgba(123,196,40,.45)',
+                borderWidth:     1.5,
+                borderRadius:    4,
+                hoverBackgroundColor: 'rgba(90,158,28,.22)',
             }]
         },
         options: {
@@ -507,135 +745,101 @@ function renderDailyChart(data) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#111811',
-                    borderColor: '#2d402d',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e4e8ee',
                     borderWidth: 1,
-                    titleColor: '#7bc428',
-                    bodyColor: '#d4eabc',
+                    titleColor: '#0f172a',
+                    bodyColor:  '#475569',
+                    padding: 10,
+                    cornerRadius: 8,
+                    boxShadow: '0 4px 12px rgba(0,0,0,.1)',
                     callbacks: {
-                        title: items => items[0].label,
-                        label: item => ` ${item.raw} sessions`,
+                        title: i => i[0].label,
+                        label: i => `  ${i.raw} sessions`,
                     }
                 },
             },
             scales: {
                 x: {
-                    grid:   { color: 'rgba(255,255,255,.04)' },
-                    ticks:  { color: '#3a5230', maxTicksLimit: 8, maxRotation: 0 },
-                    border: { color: '#1e2a1e' },
+                    grid:   { display: false },
+                    ticks:  { color: '#94a3b8', maxTicksLimit: 8, maxRotation: 0, font: { size: 11 } },
+                    border: { display: false },
                 },
                 y: {
-                    grid:         { color: 'rgba(255,255,255,.04)' },
-                    ticks:        { color: '#3a5230', stepSize: 1 },
-                    border:       { color: '#1e2a1e' },
-                    beginAtZero:  true,
+                    grid:        { color: '#f1f5f9', lineWidth: 1 },
+                    ticks:       { color: '#94a3b8', stepSize: 1, font: { size: 11 } },
+                    border:      { display: false, dash: [3, 3] },
+                    beginAtZero: true,
                 }
             }
         }
     });
 }
 
-// ── Load all data ───────────────────────────────────────────────────────────
+// ── Load all data ────────────────────────────────────────────────────────────
 async function loadAll(days) {
-    // Reset KPIs and clear any prior error banner
     ['kpi-sessions','kpi-searches','kpi-results','kpi-installs'].forEach(id => {
         document.getElementById(id).textContent = '—';
     });
-    const existingBanner = document.getElementById('error-banner');
-    if (existingBanner) existingBanner.remove();
+    document.querySelectorAll('.error-banner').forEach(b => b.remove());
 
-    let anyError = false;
-
-    // Fire all 9 RPCs in parallel
     const [kpis, daily, cats, stores, cards, devices, tangerine, toggle, split] = await Promise.all([
-        rpc('get_dashboard_kpis',         { days_back: days }),
-        rpc('get_daily_sessions',         { days_back: days }),
-        rpc('get_top_categories',         { days_back: days, lmt: 8 }),
-        rpc('get_top_stores',             { days_back: days, lmt: 8 }),
-        rpc('get_top_cards',              { days_back: days, lmt: 8 }),
-        rpc('get_device_breakdown',       { days_back: days }),
-        rpc('get_tangerine_categories',   { days_back: days }),
-        rpc('get_toggle_usage',           { days_back: days }),
-        rpc('get_search_method_split',    { days_back: days }),
+        rpc('get_dashboard_kpis',       { days_back: days }),
+        rpc('get_daily_sessions',       { days_back: days }),
+        rpc('get_top_categories',       { days_back: days, lmt: 8 }),
+        rpc('get_top_stores',           { days_back: days, lmt: 8 }),
+        rpc('get_top_cards',            { days_back: days, lmt: 8 }),
+        rpc('get_device_breakdown',     { days_back: days }),
+        rpc('get_tangerine_categories', { days_back: days }),
+        rpc('get_toggle_usage',         { days_back: days }),
+        rpc('get_search_method_split',  { days_back: days }),
     ]);
 
-    if ([kpis, daily, cats, stores, cards, devices, tangerine, toggle, split].some(r => r === null)) {
-        anyError = true;
-    }
-
-    // KPIs
     if (kpis) {
-        document.getElementById('kpi-sessions').textContent  = fmt(kpis.total_sessions);
-        document.getElementById('kpi-searches').textContent  = fmt(kpis.total_searches);
-        document.getElementById('kpi-results').textContent   = fmt(kpis.total_results);
-        document.getElementById('kpi-installs').textContent  = fmt(kpis.pwa_installs);
+        document.getElementById('kpi-sessions').textContent = fmt(kpis.total_sessions);
+        document.getElementById('kpi-searches').textContent = fmt(kpis.total_searches);
+        document.getElementById('kpi-results').textContent  = fmt(kpis.total_results);
+        document.getElementById('kpi-installs').textContent = fmt(kpis.pwa_installs);
     }
 
-    // Daily sessions chart
     renderDailyChart(daily || []);
 
-    // Search method split — always render, fallback to zeros if null
     renderSplitRow('search-split', [
         { label: 'By category', value: split ? (split.category     || 0) : 0, color: '#7bc428' },
         { label: 'By store',    value: split ? (split.store        || 0) : 0, color: '#1a5ca8' },
-        { label: 'No results',  value: split ? (split.zero_results || 0) : 0, color: '#f47920' },
+        { label: 'No results',  value: split ? (split.zero_results || 0) : 0, color: '#d9650e' },
     ]);
 
-    // View mode toggle — always render, fallback to zeros if null
     renderSplitRow('toggle-split', [
         { label: 'Multiplier', value: toggle ? (toggle.multiplier || 0) : 0, color: '#7bc428' },
-        { label: '¢ per $1',   value: toggle ? (toggle.per_dollar || 0) : 0, color: '#f47920' },
+        { label: '¢ per $1',   value: toggle ? (toggle.per_dollar || 0) : 0, color: '#d9650e' },
     ]);
 
-    // Bar lists — pass empty array if null, render functions handle it
-    renderBarList('top-categories', cats      || [], 'category',  'searches', '#7bc428');
-    renderBarList('top-stores',     stores    || [], 'store',     'searches', '#1a5ca8');
-    renderBarList('top-cards',      cards     || [], 'card',      'times_top','#7bc428');
-    renderBarList('tangerine-cats', tangerine || [], 'cat_name',  'picks',    '#f47920');
-
-    // Devices
+    renderBarList('top-categories', cats      || [], 'category', 'searches', '#7bc428');
+    renderBarList('top-stores',     stores    || [], 'store',    'searches', '#1a5ca8');
+    renderBarList('top-cards',      cards     || [], 'card',     'times_top','#5a9e1c');
+    renderBarList('tangerine-cats', tangerine || [], 'cat_name', 'picks',    '#d9650e');
     renderDevices(devices || []);
 
-    // Show a non-blocking error notice if any RPC failed
+    const anyError = [kpis, daily, cats, stores, cards, devices, tangerine, toggle, split].some(r => r === null);
     if (anyError) {
         const banner = document.createElement('div');
-        banner.id = 'error-banner';
-        banner.style.cssText = `
-            margin: 0 0 16px;
-            padding: 12px 16px;
-            background: rgba(200,50,50,.12);
-            border: 1px solid rgba(200,50,50,.3);
-            border-radius: 8px;
-            font-family: var(--mono);
-            font-size: 12px;
-            color: #e87;
-        `;
-        banner.textContent = '⚠ One or more data sources failed to load. Panels showing "No data yet" may be temporarily unavailable — refresh to retry.';
+        banner.className = 'error-banner';
+        banner.textContent = '⚠ One or more panels failed to load — refresh to retry.';
         document.querySelector('.content').prepend(banner);
     }
 }
 
-function initDashboard() {
-    loadAll(activeDays);
-}
+function initDashboard() { loadAll(activeDays); }
 
-// ── Password gate logic ─────────────────────────────────────────────────────
-// SHA-256 of the dashboard password.
-// To change the password: run `echo -n "newpassword" | sha256sum` in Terminal
-// and replace the hash below. Store the password in 1Password as a Login item
-// with this page's URL so it autofills on next visit.
-//
-// Current password: crediquest2025
+// ── Password gate ────────────────────────────────────────────────────────────
+// SHA-256 of "crediquest2025"
+// To change: run `echo -n "newpassword" | sha256sum` and update the hash
 const PW_HASH = '3a9399b1f48191961d5e6a0f217295da6390dcff124ff6383ee7e3b5e1d68ed3';
 
 async function sha256(str) {
-    const buf = await crypto.subtle.digest(
-        'SHA-256',
-        new TextEncoder().encode(str)
-    );
-    return Array.from(new Uint8Array(buf))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 function unlock() {
@@ -644,12 +848,10 @@ function unlock() {
     initDashboard();
 }
 
-// Stay unlocked for the session — no re-prompt on reload
 if (sessionStorage.getItem('cq_dash_unlocked') === '1') {
     unlock();
 } else {
     const pwInput = document.getElementById('password');
-    const pwBtn   = document.getElementById('pw-btn');
     const pwError = document.getElementById('pw-error');
     const form    = document.getElementById('login-form');
 
@@ -662,28 +864,17 @@ if (sessionStorage.getItem('cq_dash_unlocked') === '1') {
             pwError.style.display = 'block';
             pwInput.value = '';
             pwInput.focus();
-            // Shake animation
             pwInput.style.animation = 'none';
-            pwInput.offsetHeight; // reflow
+            pwInput.offsetHeight;
             pwInput.style.animation = 'shake .35s ease';
             setTimeout(() => { pwError.style.display = 'none'; }, 3000);
         }
     }
 
     form.addEventListener('submit', attemptUnlock);
-    pwBtn.addEventListener('click', attemptUnlock);
-    pwInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); attemptUnlock(); }
-    });
+    document.getElementById('pw-btn').addEventListener('click', attemptUnlock);
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); attemptUnlock(); } });
 }
 </script>
-
-<style>
-@keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20%,60%  { transform: translateX(-6px); }
-    40%,80%  { transform: translateX(6px); }
-}
-</style>
 </body>
 </html>
