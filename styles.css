@@ -1,28 +1,29 @@
-/* Global Styles */
+/* ── Reset: box-sizing on every element, not just body ───────────────────── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* ── Global ───────────────────────────────────────────────────────────────── */
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
     background-color: #f7f7f7;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    min-height: 100dvh;        /* dynamic viewport height — accounts for Safari address bar */
+    overflow-x: hidden;        /* nothing ever causes horizontal scroll */
 }
 
 h1 {
-    /*
-        FIX: Aptos is a Microsoft font, not available on Google Fonts.
-        Using Plus Jakarta Sans (loaded via Google Fonts) as the primary,
-        with Aptos as a native fallback for users who already have it.
-    */
     font-family: 'Plus Jakarta Sans', Aptos, sans-serif;
     font-size: 2.5em;
     text-align: center;
     margin-bottom: 20px;
 }
 
-/* Navigation Bar */
+/* ── Navigation ───────────────────────────────────────────────────────────── */
 .top-nav {
     background-color: #333;
     color: white;
@@ -32,6 +33,7 @@ h1 {
     position: sticky;
     top: 0;
     z-index: 1000;
+    width: 100%;
 }
 
 .nav-item {
@@ -40,6 +42,7 @@ h1 {
     font-size: 16px;
     display: flex;
     align-items: center;
+    padding: 4px 8px;
 }
 
 .nav-item img {
@@ -51,17 +54,18 @@ h1 {
     border-radius: 5px;
 }
 
-/* Content Wrapper */
+/* ── Content wrapper ──────────────────────────────────────────────────────── */
 .content-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     flex-grow: 1;
-    padding: 20px;
+    padding: 20px 16px;        /* horizontal padding keeps content off the edges */
+    width: 100%;
 }
 
-/* Main Container */
+/* ── Main card ────────────────────────────────────────────────────────────── */
 .main-container {
     max-width: 800px;
     width: 100%;
@@ -70,7 +74,6 @@ h1 {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
-    margin: 0 auto;
 }
 
 .instruction {
@@ -79,7 +82,7 @@ h1 {
     color: #555;
 }
 
-/* Search Section */
+/* ── Search section ───────────────────────────────────────────────────────── */
 .search-section {
     margin-bottom: 20px;
 }
@@ -98,10 +101,10 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 5px;
     margin-bottom: 15px;
-    box-sizing: border-box;
+    /* box-sizing already border-box from * rule above */
 }
 
-/* Button */
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
 button {
     background-color: #000000;
     color: white;
@@ -110,13 +113,15 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    /* Prevent buttons overflowing their container on small screens */
+    max-width: 100%;
 }
 
 button:hover {
     background-color: #555;
 }
 
-/* Loading spinner */
+/* ── Loading spinner ──────────────────────────────────────────────────────── */
 #loading-spinner {
     font-size: 1em;
     color: #555;
@@ -124,16 +129,18 @@ button:hover {
     font-style: italic;
 }
 
-/* Modal */
+/* ── Modals ───────────────────────────────────────────────────────────────── */
 .modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 100;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    /* Allows scrolling the overlay itself on very small screens */
+    overflow-y: auto;
 }
 
 .modal-content {
@@ -141,10 +148,11 @@ button:hover {
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 88%;                /* was 80% — gives breathing room on narrow phones */
     max-width: 500px;
     max-height: 70vh;
     overflow-y: auto;
+    border-radius: 8px;
 }
 
 .modal-close {
@@ -154,13 +162,15 @@ button:hover {
     border: none;
     cursor: pointer;
     font-size: 16px;
+    border-radius: 5px;
+    margin-top: 12px;
 }
 
 .modal-close:hover {
     background-color: #555;
 }
 
-/* Settings Select All Button */
+/* ── Settings buttons ─────────────────────────────────────────────────────── */
 #settings-select-all-button {
     padding: 10px 20px;
     background-color: #000000;
@@ -168,13 +178,15 @@ button:hover {
     border: none;
     cursor: pointer;
     font-size: 16px;
+    border-radius: 5px;
+    margin-right: 8px;
 }
 
 #settings-select-all-button:hover {
     background-color: #555;
 }
 
-/* Card checkboxes */
+/* ── Checkboxes ───────────────────────────────────────────────────────────── */
 #selected-cards-container {
     margin: 20px 0;
     max-height: 200px;
@@ -194,6 +206,7 @@ input[type="checkbox"] {
     -moz-appearance: none;
     width: 20px;
     height: 20px;
+    min-width: 20px;           /* prevent flex shrinking the checkbox */
     border-radius: 5px;
     background-color: #f0f0f0;
     border: 2px solid #ccc;
@@ -222,16 +235,19 @@ label {
     user-select: none;
 }
 
-/* Footer */
+/* ── Footer ───────────────────────────────────────────────────────────────── */
 footer {
     width: 100%;
     background: #000000;
     color: white;
     text-align: center;
     font-size: 1rem;
-    border-radius: 10px;
-    padding: 1rem;
+    /* No border-radius — a full-width element with rounded corners clips on mobile */
+    padding: 1rem 1rem;
+    /* Respect iPhone home indicator at bottom */
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     margin-top: 20px;
+    flex-shrink: 0;            /* don't let footer compress inside flex body */
 }
 
 footer p {
@@ -240,38 +256,10 @@ footer p {
 
 footer h6 {
     text-align: left;
+    margin: 8px 0 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2em;
-    }
-
-    .main-container {
-        width: 90%;
-        margin: 10px;
-    }
-
-    .search-section input,
-    .search-section select {
-        width: 90%;
-    }
-
-    footer {
-        font-size: 0.6em;
-    }
-
-    .top-nav {
-        padding: 12px 0;
-    }
-
-    .nav-item {
-        font-size: 14px;
-    }
-}
-
-/* Orientation Warning */
+/* ── Orientation warning ──────────────────────────────────────────────────── */
 #orientation-warning {
     position: fixed;
     top: 0;
@@ -302,7 +290,7 @@ footer h6 {
     font-size: 1.2em;
 }
 
-/* Badge */
+/* ── Badges ───────────────────────────────────────────────────────────────── */
 .badge {
     display: flex;
     justify-content: space-between;
@@ -317,32 +305,92 @@ footer h6 {
 .badge .multiplier {
     font-weight: bold;
     color: #333;
+    white-space: nowrap;
+    margin-left: 8px;
 }
 
 #store-selection-modal .badge {
     display: inline-block;
     padding: 10px 15px;
-    margin-right: 5px;
+    margin: 4px;
     background-color: #333;
     color: white;
     border-radius: 5px;
-    border: 1px;
     cursor: pointer;
     font-weight: bold;
     text-align: center;
-    transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s ease;
+    transition: background-color 0.3s, transform 0.2s ease;
     font-size: 16px;
 }
 
-#store-selection-modal .badge:hover {
-    background-color: #555;
+#store-selection-modal .badge:hover  { background-color: #555; }
+#store-selection-modal .badge:active { background-color: #000; transform: scale(0.98); }
+#store-selection-modal .badge:focus  { outline: 3px solid #0056b3; }
+
+/* ── Mobile (≤768px) ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .content-wrapper {
+        padding: 12px;
+    }
+
+    .main-container {
+        padding: 16px 12px;
+    }
+
+    .search-section input,
+    .search-section select {
+        width: 100%;           /* full width on small screens — 80/90% leaves awkward gaps */
+    }
+
+    button {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 1.1em;
+    }
+
+    /* Keep settings/close buttons auto-width */
+    .modal-close,
+    #settings-select-all-button {
+        width: auto;
+    }
+
+    .modal-content {
+        width: 92%;
+        margin: 10% auto;
+    }
+
+    .top-nav {
+        padding: 12px 0;
+    }
+
+    .nav-item {
+        font-size: 13px;
+    }
+
+    .nav-item img {
+        width: 20px;
+        height: 20px;
+        margin-right: 4px;
+    }
+
+    footer {
+        font-size: 0.65em;
+        border-radius: 0;      /* explicitly no rounding on mobile */
+    }
 }
 
-#store-selection-modal .badge:active {
-    background-color: #000000;
-    transform: scale(0.98);
-}
+/* ── Very small screens (≤375px — iPhone SE) ──────────────────────────────── */
+@media (max-width: 375px) {
+    h1 {
+        font-size: 1.5em;
+    }
 
-#store-selection-modal .badge:focus {
-    outline: 3px solid #0056b3;
+    .nav-item span,
+    .nav-item {
+        font-size: 12px;
+    }
 }
