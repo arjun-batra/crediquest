@@ -96,7 +96,7 @@
 
     <!-- ── Footer ── -->
     <footer class="footer">
-        <p class="footer-credit">Vibe Coded with ❤️ by Arjun &nbsp;·&nbsp; <span class="footer-version">v0.6</span></p>
+        <p class="footer-credit">Vibe Coded ❤️ by Arjun &nbsp;·&nbsp; <span class="footer-version">v0.6</span></p>
         <p class="footer-disclaimer">For informational purposes only. All trademarks belong to their respective owners. Not affiliated with any merchant or card issuer.</p>
     </footer>
 
@@ -174,7 +174,7 @@
                     <p>CrediQuest answers one question: <strong>which card should you use right now?</strong></p>
                     <p>It covers <strong>20 popular Canadian credit cards</strong> across <strong>25 spending categories</strong> and <strong>629+ stores</strong>. Go to My Cards, select the cards you own, then search by store or category to instantly see which card earns you the most.</p>
                     <p>Built with vanilla JS + Supabase, and installable as a PWA directly from Safari. On iPhone, tap <strong>Share → Add to Home Screen</strong> to install.</p>
-                    <p class="version-tag">Version 0.6 &nbsp;·&nbsp; Vibe Coded with ❤️ by Arjun</p>
+                    <p class="version-tag">Version 0.6 &nbsp;·&nbsp; Vibe Coded ❤️ by Arjun</p>
                 </div>
             </div>
         </div>
@@ -240,6 +240,32 @@
                 <span class="tangerine-count" id="tangerine-count-label">Select 2 or 3 categories</span>
                 <button class="btn-orange" id="tangerine-save-btn" disabled>Save</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ── PWA Install Banner ──────────────────────────────────────────────
+         Android/Chrome: real 1-click install via beforeinstallprompt API.
+         iOS/Safari:     instructional banner (Share → Add to Home Screen).
+         Neither shows if already running in standalone (installed) mode.
+         Dismissed state saved to localStorage — never shown again once closed.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <div id="install-banner" class="install-banner" role="complementary" aria-label="Install app" hidden>
+        <div class="install-banner-inner">
+            <img src="icons/icon-192x192.png" class="install-banner-icon" alt="">
+            <div class="install-banner-text">
+                <strong id="install-banner-title">Add to Home Screen</strong>
+                <span id="install-banner-sub">Use CrediQuest like a native app</span>
+            </div>
+            <button id="install-banner-btn" class="install-banner-btn">Install</button>
+            <button id="install-banner-dismiss" class="install-banner-dismiss" aria-label="Dismiss">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <!-- iOS-specific step instructions, hidden on Android -->
+        <div id="install-banner-ios-steps" class="install-banner-ios-steps" hidden>
+            Tap <strong>Share</strong>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            then <strong>Add to Home Screen</strong>
         </div>
     </div>
 
