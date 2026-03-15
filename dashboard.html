@@ -496,6 +496,7 @@ body {
             <button type="submit" class="gate-btn" id="pw-btn">Continue →</button>
         </form>
         <p class="gate-error" id="pw-error">Incorrect password — try again</p>
+        <p class="gate-hint">Tip: save as a Login in 1Password with this URL</p>
     </div>
 </div>
 
@@ -515,9 +516,12 @@ body {
                 Live
             </div>
             <div class="period-btns">
-                <button class="period-btn" data-days="7">7d</button>
-                <button class="period-btn active" data-days="30">30d</button>
-                <button class="period-btn" data-days="90">90d</button>
+                <button class="period-btn" data-hours="6">6h</button>
+                <button class="period-btn" data-hours="12">12h</button>
+                <button class="period-btn" data-hours="24">24h</button>
+                <button class="period-btn" data-hours="168">7d</button>
+                <button class="period-btn active" data-hours="720">30d</button>
+                <button class="period-btn" data-hours="2160">90d</button>
             </div>
         </div>
     </nav>
@@ -638,15 +642,15 @@ Chart.defaults.font.size   = 11;
 Chart.defaults.color       = '#94a3b8';
 
 let dailyChart = null;
-let activeDays = 30;
+let activeHours = 720; // default: 30 days
 
 // ── Period toggle ────────────────────────────────────────────────────────────
 document.querySelectorAll('.period-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        activeDays = Number(btn.dataset.days);
-        loadAll(activeDays);
+        activeHours = Number(btn.dataset.hours);
+        loadAll(activeHours);
     });
 });
 
@@ -718,17 +722,18 @@ function renderDevices(data) {
     `).join('');
 }
 
-function renderDailyChart(data) {
+function renderDailyChart(data, hours) {
     const canvas = document.getElementById('chart-daily');
     if (!data || data.length === 0) {
         canvas.parentElement.innerHTML = '<div class="empty"><span>📈</span>No data yet</div>';
         return;
     }
     if (dailyChart) dailyChart.destroy();
+    const isSubDay = hours <= 24;
     dailyChart = new Chart(canvas, {
         type: 'bar',
         data: {
-            labels: data.map(d => d.day),
+            labels: data.map(d => d.bucket),
             datasets: [{
                 data: data.map(d => Number(d.sessions)),
                 backgroundColor: 'rgba(90,158,28,.12)',
@@ -754,14 +759,14 @@ function renderDailyChart(data) {
                     boxShadow: '0 4px 12px rgba(0,0,0,.1)',
                     callbacks: {
                         title: i => i[0].label,
-                        label: i => `  ${i.raw} sessions`,
+                        label: i => `  ${i.raw} session${i.raw !== 1 ? 's' : ''}`,
                     }
                 },
             },
             scales: {
                 x: {
                     grid:   { display: false },
-                    ticks:  { color: '#94a3b8', maxTicksLimit: 8, maxRotation: 0, font: { size: 11 } },
+                    ticks:  { color: '#94a3b8', maxTicksLimit: isSubDay ? 12 : 8, maxRotation: 0, font: { size: 11 } },
                     border: { display: false },
                 },
                 y: {
@@ -776,22 +781,22 @@ function renderDailyChart(data) {
 }
 
 // ── Load all data ────────────────────────────────────────────────────────────
-async function loadAll(days) {
+async function loadAll(hours) {
     ['kpi-sessions','kpi-searches','kpi-results','kpi-installs'].forEach(id => {
         document.getElementById(id).textContent = '—';
     });
     document.querySelectorAll('.error-banner').forEach(b => b.remove());
 
     const [kpis, daily, cats, stores, cards, devices, tangerine, toggle, split] = await Promise.all([
-        rpc('get_dashboard_kpis',       { days_back: days }),
-        rpc('get_daily_sessions',       { days_back: days }),
-        rpc('get_top_categories',       { days_back: days, lmt: 8 }),
-        rpc('get_top_stores',           { days_back: days, lmt: 8 }),
-        rpc('get_top_cards',            { days_back: days, lmt: 8 }),
-        rpc('get_device_breakdown',     { days_back: days }),
-        rpc('get_tangerine_categories', { days_back: days }),
-        rpc('get_toggle_usage',         { days_back: days }),
-        rpc('get_search_method_split',  { days_back: days }),
+        rpc('get_dashboard_kpis',       { hours_back: hours }),
+        rpc('get_daily_sessions',       { hours_back: hours }),
+        rpc('get_top_categories',       { hours_back: hours, lmt: 8 }),
+        rpc('get_top_stores',           { hours_back: hours, lmt: 8 }),
+        rpc('get_top_cards',            { hours_back: hours, lmt: 8 }),
+        rpc('get_device_breakdown',     { hours_back: hours }),
+        rpc('get_tangerine_categories', { hours_back: hours }),
+        rpc('get_toggle_usage',         { hours_back: hours }),
+        rpc('get_search_method_split',  { hours_back: hours }),
     ]);
 
     if (kpis) {
@@ -801,7 +806,15 @@ async function loadAll(days) {
         document.getElementById('kpi-installs').textContent = fmt(kpis.pwa_installs);
     }
 
-    renderDailyChart(daily || []);
+    // Update daily sessions chart title to reflect current period
+    const periodLabel = hours <= 24
+        ? `Sessions by hour (last ${hours}h)`
+        : `Daily sessions (last ${hours / 24 | 0}d)`;
+    document.querySelector('#chart-daily')?.closest('.chart-card')
+        ?.querySelector('.chart-title')
+        && (document.querySelector('#chart-daily').closest('.chart-card').querySelector('.chart-title').textContent = periodLabel);
+
+    renderDailyChart(daily || [], hours);
 
     renderSplitRow('search-split', [
         { label: 'By category', value: split ? (split.category     || 0) : 0, color: '#7bc428' },
@@ -829,7 +842,7 @@ async function loadAll(days) {
     }
 }
 
-function initDashboard() { loadAll(activeDays); }
+function initDashboard() { loadAll(activeHours); }
 
 // ── Password gate ────────────────────────────────────────────────────────────
 // SHA-256 of "crediquest2025"
