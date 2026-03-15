@@ -694,12 +694,99 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
-    // PWA install prompt — fires when Chrome/Safari prompts to add to home screen
-    window.addEventListener('beforeinstallprompt', () => {
-        logEvent('pwa_install_prompted', {});
+    // ── PWA Install Banner ────────────────────────────────────────────────────
+    // Strategy:
+    //   Android/Chrome  → intercept beforeinstallprompt, show banner with real
+    //                     Install button that calls deferredPrompt.prompt()
+    //   iOS/Safari      → detect platform + not-standalone, show instructional
+    //                     banner with Share icon steps (no programmatic install)
+    //   Already installed (standalone) → never show banner
+    //   Previously dismissed → never show banner again (localStorage flag)
+
+    const INSTALL_DISMISSED_KEY = 'cq_install_dismissed';
+    const INSTALL_DISMISS_DAYS  = 15;
+
+    const bannerEl      = document.getElementById('install-banner');
+    const bannerBtn     = document.getElementById('install-banner-btn');
+    const bannerDismiss = document.getElementById('install-banner-dismiss');
+    const bannerSub     = document.getElementById('install-banner-sub');
+    const iosSteps      = document.getElementById('install-banner-ios-steps');
+
+    let deferredPrompt = null; // holds the beforeinstallprompt event on Android
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                      || window.navigator.standalone === true;
+    const isIOS        = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isAndroid    = /android/i.test(navigator.userAgent);
+
+    // Dismissed = a timestamp exists AND it's within the 15-day window
+    function isDismissed() {
+        const ts = localStorage.getItem(INSTALL_DISMISSED_KEY);
+        if (!ts) return false;
+        const daysSince = (Date.now() - Number(ts)) / (1000 * 60 * 60 * 24);
+        return daysSince < INSTALL_DISMISS_DAYS;
+    }
+
+    function recordDismissal() {
+        localStorage.setItem(INSTALL_DISMISSED_KEY, String(Date.now()));
+    }
+
+    function showBanner() {
+        if (isDismissed() || isStandalone) return;
+        bannerEl.hidden = false;
+        // Slide in after a short delay so it doesn't clash with page load
+        setTimeout(() => bannerEl.classList.add('install-banner--visible'), 1500);
+    }
+
+    function hideBanner() {
+        bannerEl.classList.remove('install-banner--visible');
+        setTimeout(() => { bannerEl.hidden = true; }, 350); // match CSS transition
+    }
+
+    bannerDismiss.addEventListener('click', () => {
+        hideBanner();
+        recordDismissal();
+        logEvent('pwa_install_dismissed', { platform: isIOS ? 'ios' : 'android' });
     });
+
+    // ── Android / Chrome ──────────────────────────────────────────────────────
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();           // stop the automatic mini-infobar
+        deferredPrompt = e;
+        logEvent('pwa_install_prompted', { platform: 'android' });
+
+        bannerBtn.textContent = 'Install';
+        showBanner();
+    });
+
+    bannerBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // Android: trigger the native install dialog
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            hideBanner();
+            recordDismissal();
+            logEvent(outcome === 'accepted' ? 'pwa_installed' : 'pwa_install_dismissed',
+                     { platform: 'android', outcome });
+        }
+        // iOS: button is hidden, steps are shown instead — this won't fire
+    });
+
     window.addEventListener('appinstalled', () => {
-        logEvent('pwa_installed', {});
+        hideBanner();
+        recordDismissal();
+        logEvent('pwa_installed', { platform: 'android' });
     });
+
+    // ── iOS / Safari ──────────────────────────────────────────────────────────
+    // No programmatic install available. Show banner with manual steps.
+    if (isIOS && !isStandalone && !isDismissed()) {
+        bannerBtn.hidden    = true;         // hide the Install button
+        iosSteps.hidden     = false;        // show step-by-step guide
+        bannerSub.textContent = 'Install in 2 taps';
+        logEvent('pwa_install_prompted', { platform: 'ios' });
+        showBanner();
+    }
 
 }); // end DOMContentLoaded

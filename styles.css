@@ -1106,3 +1106,128 @@ body {
     margin-bottom: 10px;
     text-align: center;
 }
+
+/* ── PWA Install Banner ───────────────────────────────────────────────────── */
+.install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    padding: 0 16px env(safe-area-inset-bottom, 12px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    transform: translateY(110%);
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+    pointer-events: none;
+}
+
+.install-banner--visible {
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.install-banner-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border, #e4e8ee);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .12), 0 2px 8px rgba(0, 0, 0, .06);
+    margin-bottom: 8px;
+}
+
+.install-banner-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.install-banner-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.install-banner-text strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text, #0f172a);
+    letter-spacing: -.01em;
+}
+
+.install-banner-text span {
+    font-size: 12px;
+    color: var(--text-2, #475569);
+    font-weight: 500;
+}
+
+.install-banner-btn {
+    padding: 8px 16px;
+    background: var(--green, #5a9e1c);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background .15s;
+}
+
+.install-banner-btn:hover { background: var(--green-mid, #7bc428); }
+
+.install-banner-dismiss {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-3, #94a3b8);
+    padding: 4px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .15s;
+}
+
+.install-banner-dismiss:hover { color: var(--text, #0f172a); }
+
+/* iOS instruction strip — sits below the main card */
+.install-banner-ios-steps {
+    background: var(--bg-elevated, #f8fafc);
+    border: 1px solid var(--border, #e4e8ee);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2, #475569);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+
+.install-banner-ios-steps strong {
+    color: var(--text, #0f172a);
+    font-weight: 700;
+}
+
+.install-banner-ios-steps svg {
+    flex-shrink: 0;
+    vertical-align: middle;
+    stroke: var(--blue, #1a5ca8);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .install-banner-inner {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .4), 0 2px 8px rgba(0, 0, 0, .2);
+    }
+}
