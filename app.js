@@ -138,7 +138,128 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal('settings-modal');
     });
     document.getElementById('about-btn').addEventListener('click',      () => openModal('about-modal'));
-    document.getElementById('contribute-btn').addEventListener('click', () => openModal('contribute-modal'));
+    document.getElementById('contribute-btn').addEventListener('click', () => {
+        openModal('contribute-modal');
+        initContributeForm();
+    });
+
+    // ── Contribute form ───────────────────────────────────────────────────
+    // Populated once on first open — reuses creditCardsCache and a categories
+    // list fetched from the DB. Tabs switch between three submission types.
+
+    let contributeInitialised = false;
+
+    function initContributeForm() {
+        if (contributeInitialised) return;
+        contributeInitialised = true;
+
+        // Populate card dropdowns from cache
+        const cardSelects = [document.getElementById('wm-card')];
+        creditCardsCache.forEach(card => {
+            cardSelects.forEach(sel => {
+                const opt = document.createElement('option');
+                opt.value       = card.card_name;
+                opt.textContent = card.card_name;
+                sel.appendChild(opt);
+            });
+        });
+
+        // Populate category dropdowns from DB
+        sb.from('reward_types').select('reward_type').order('reward_type')
+            .then(({ data }) => {
+                if (!data) return;
+                const catSelects = [
+                    document.getElementById('ms-category'),
+                    document.getElementById('wm-category'),
+                ];
+                data.forEach(rt => {
+                    catSelects.forEach(sel => {
+                        const opt = document.createElement('option');
+                        opt.value       = rt.reward_type;
+                        opt.textContent = rt.reward_type;
+                        sel.appendChild(opt);
+                    });
+                });
+            });
+
+        // Tab switching
+        document.querySelectorAll('.suggest-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.suggest-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.suggest-panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+                document.getElementById('suggest-status').textContent = '';
+                document.getElementById('suggest-submit-btn').disabled = false;
+            });
+        });
+
+        // Submit
+        document.getElementById('suggest-submit-btn').addEventListener('click', submitSuggestion);
+    }
+
+    async function submitSuggestion() {
+        const activeTab  = document.querySelector('.suggest-tab.active')?.dataset.tab;
+        const statusEl   = document.getElementById('suggest-status');
+        const submitBtn  = document.getElementById('suggest-submit-btn');
+        let details = {};
+
+        // Validate and collect fields per tab
+        if (activeTab === 'missing_store') {
+            const name = document.getElementById('ms-store-name').value.trim();
+            const cat  = document.getElementById('ms-category').value;
+            if (!name || !cat) {
+                statusEl.textContent = 'Store name and category are required.';
+                statusEl.className = 'suggest-status suggest-status--error';
+                return;
+            }
+            details = { store_name: name, category: cat,
+                        notes: document.getElementById('ms-notes').value.trim() };
+
+        } else if (activeTab === 'wrong_multiplier') {
+            const card = document.getElementById('wm-card').value;
+            const cat  = document.getElementById('wm-category').value;
+            const rate = document.getElementById('wm-correct-rate').value;
+            if (!card || !cat || !rate) {
+                statusEl.textContent = 'Card, category, and correct rate are required.';
+                statusEl.className = 'suggest-status suggest-status--error';
+                return;
+            }
+            details = { card_name: card, category: cat, correct_rate: Number(rate),
+                        source: document.getElementById('wm-source').value.trim() };
+
+        } else if (activeTab === 'new_card') {
+            const name = document.getElementById('nc-card-name').value.trim();
+            if (!name) {
+                statusEl.textContent = 'Card name is required.';
+                statusEl.className = 'suggest-status suggest-status--error';
+                return;
+            }
+            details = { card_name: name,
+                        issuer: document.getElementById('nc-issuer').value.trim(),
+                        notes:  document.getElementById('nc-notes').value.trim() };
+        }
+
+        submitBtn.disabled = true;
+        statusEl.textContent = 'Submitting…';
+        statusEl.className = 'suggest-status';
+
+        const { error } = await sb.from('suggestions').insert({ type: activeTab, details });
+
+        if (error) {
+            console.error('[CQ] suggestion submit:', error);
+            statusEl.textContent = 'Something went wrong — please try again.';
+            statusEl.className = 'suggest-status suggest-status--error';
+            submitBtn.disabled = false;
+        } else {
+            statusEl.textContent = '✓ Thanks! We\'ll review your suggestion.';
+            statusEl.className = 'suggest-status suggest-status--success';
+            // Clear the active form
+            document.querySelectorAll('#contribute-modal input, #contribute-modal select')
+                .forEach(el => { el.value = el.tagName === 'SELECT' ? '' : ''; });
+            logEvent('suggestion_submitted', { type: activeTab });
+        }
+    }
 
     // ── Results view toggle ───────────────────────────────────────────────
     const toggleMultiplierBtn = document.getElementById('toggle-multiplier');
@@ -479,6 +600,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="result-multiplier">${valueStr}</span>
             `;
             list.appendChild(el);
+
+            // Feature #6: explanation line for the #1 card only
+            // Shows which other categories this card earns the same top rate on,
+            // giving the user context about why it won and where else to use it.
+            if (i === 0) {
+                const explanationEl = document.createElement('div');
+                explanationEl.className = 'result-explanation';
+                explanationEl.id = 'result-explanation';
+                explanationEl.textContent = ''; // filled async below
+                list.appendChild(explanationEl);
+                fetchTopCardExplanation(card.credit_card_id, card.multiplier, explanationEl);
+            }
         });
 
         // Tangerine note
@@ -510,6 +643,39 @@ document.addEventListener('DOMContentLoaded', () => {
             footnote.className = 'results-footnote';
             footnote.textContent = 'Based on estimated point values: Amex MR 2¢, Aeroplan 1.6¢, BMO Rewards 0.67¢, TD Rewards 0.5¢, all others 1¢.';
             list.appendChild(footnote);
+        }
+    }
+
+    // ── Top card explanation (Feature #6) ────────────────────────────────
+    // Fetches all categories where the #1 card earns its top multiplier,
+    // then renders a compact "Also earns Nx on X, Y, Z" line.
+    // Fire-and-forget: never blocks the results render.
+    async function fetchTopCardExplanation(cardId, topMultiplier, el) {
+        if (!cardId) return;
+        try {
+            const { data, error } = await sb
+                .from('credit_card_reward_types')
+                .select('reward_type_id, multiplier, reward_types(reward_type)')
+                .eq('credit_card_id', cardId)
+                .eq('multiplier', topMultiplier)
+                .order('reward_types(reward_type)');
+            if (error || !data || data.length === 0) return;
+
+            // Build category list, excluding the one we already searched
+            const cats = data
+                .map(r => r.reward_types?.reward_type)
+                .filter(Boolean);
+
+            if (cats.length <= 1) {
+                // Only earns this rate on the searched category — no extra info
+                el.remove();
+                return;
+            }
+
+            const rateStr = `${topMultiplier}×`;
+            el.textContent = `Also earns ${rateStr} on: ${cats.join(', ')}`;
+        } catch (e) {
+            el.remove(); // silently hide if fetch fails
         }
     }
 
