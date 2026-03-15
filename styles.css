@@ -1093,3 +1093,16 @@ body {
     position: relative;
     top: -1px;
 }
+
+/* ── Store search cap notice ──────────────────────────────────────────────── */
+.store-cap-notice {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    text-align: center;
+}
