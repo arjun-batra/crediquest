@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             properties:  properties,
             session_id:  SESSION_ID,
             device_type: DEVICE_TYPE,
-            app_version: '0.5',
+            app_version: '0.6',
         }).then(({ error }) => {
             if (error) console.warn('[CQ] analytics drop:', eventName, error.message);
         });
@@ -250,6 +250,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 saveCards();
                 updateSelectAllLabel();
+                // Invalidate cached results — card set changed, stale data must not re-render
+                lastResultsData  = null;
+                lastRewardTypeId = null;
                 logEvent('settings_changed', {
                     action:    newVal ? 'card_added' : 'card_removed',
                     card_name: card.card_name,
@@ -275,6 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedCardIds = newState ? creditCardsCache.map(c => String(c.id)) : [];
         saveCards();
         updateSelectAllLabel();
+        // Invalidate cached results — card set changed
+        lastResultsData  = null;
+        lastRewardTypeId = null;
     });
 
     function updateSelectAllLabel() {
@@ -606,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .from('stores')
                 .select('id, store_name, reward_type_id')
                 .ilike('store_name', `%${storeName}%`)
-                .limit(30);
+                .limit(50);
             if (error) throw error;
 
             if (stores.length === 0) {
@@ -624,6 +630,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const storeList = document.getElementById('store-list');
             storeList.innerHTML = '';
+
+            // Show a notice when results are capped
+            if (stores.length === 50) {
+                const cap = document.createElement('p');
+                cap.className = 'store-cap-notice';
+                cap.textContent = 'Showing top 50 results — try a more specific search term.';
+                storeList.appendChild(cap);
+            }
+
             const chips = document.createElement('div');
             chips.className = 'store-chips';
             stores.forEach(store => {
