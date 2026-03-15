@@ -1075,3 +1075,21 @@ body {
     background: var(--bg-elevated);
     border-radius: var(--radius-sm);
 }
+
+/* ── Store override badge ─────────────────────────────────────────────────── */
+/* Shown next to card name when a store-specific multiplier override is applied */
+.override-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    background: var(--orange-light);
+    border: 1px solid var(--orange-border);
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--orange-dark);
+    letter-spacing: .03em;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
