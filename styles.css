@@ -1231,3 +1231,116 @@ body {
         box-shadow: 0 8px 32px rgba(0, 0, 0, .4), 0 2px 8px rgba(0, 0, 0, .2);
     }
 }
+
+/* ── Contribute / Suggestion form ────────────────────────────────────────── */
+.suggest-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 20px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.suggest-tab {
+    flex: 1;
+    padding: 7px 6px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+}
+
+.suggest-tab.active {
+    background: var(--green-light);
+    border-color: var(--green);
+    color: var(--green-dark);
+}
+
+.suggest-tab:not(.active):hover {
+    border-color: var(--border-hi);
+    color: var(--text-primary);
+}
+
+.suggest-panel { display: none; }
+.suggest-panel.active { display: block; }
+
+.suggest-field { margin-bottom: 14px; }
+
+.suggest-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    letter-spacing: .02em;
+}
+
+.suggest-req { color: var(--green); }
+.suggest-opt { font-weight: 500; color: var(--text-muted); }
+
+.suggest-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-elevated);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    -webkit-appearance: none;
+}
+
+.suggest-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px var(--green-light);
+}
+
+/* Consistent select arrow */
+select.suggest-input {
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+}
+
+.suggest-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.suggest-status {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex: 1;
+    min-height: 18px;
+}
+
+.suggest-status--error   { color: #dc2626; }
+.suggest-status--success { color: var(--green); }
+
+/* ── Results explanation line (Feature #6) ───────────────────────────────── */
+.result-explanation {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 8px 12px 10px;
+    margin: -2px 0 6px;
+    background: var(--bg-elevated);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border: 1px solid var(--border);
+    border-top: none;
+    animation: fadeUp .25s ease both;
+}

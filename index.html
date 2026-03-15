@@ -180,7 +180,7 @@
         </div>
     </div>
 
-    <!-- Contribute modal -->
+    <!-- Contribute modal — inline suggestion form -->
     <div id="contribute-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="contribute-title">
         <div class="modal-box">
             <div class="modal-header">
@@ -189,16 +189,82 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
+
+            <!-- Tab switcher -->
+            <div class="suggest-tabs">
+                <button class="suggest-tab active" data-tab="missing_store">Missing store</button>
+                <button class="suggest-tab" data-tab="wrong_multiplier">Wrong rate</button>
+                <button class="suggest-tab" data-tab="new_card">New card</button>
+            </div>
+
             <div class="modal-body">
-                <div class="prose">
-                    <p>Found a missing store, wrong multiplier, or a card that should be added?</p>
-                    <ul>
-                        <li><strong>Missing store</strong> — store name, MCC code, and reward category.</li>
-                        <li><strong>Wrong multiplier</strong> — card name, category, correct multiplier, and source.</li>
-                        <li><strong>New card</strong> — card name and multipliers across all 25 categories.</li>
-                    </ul>
-                    <p>Open an issue or submit a pull request on <a href="https://github.com/arjun-batra/crediquest" target="_blank" rel="noopener">github.com/arjun-batra/crediquest</a>.</p>
+
+                <!-- Tab: Missing store -->
+                <div class="suggest-panel active" id="tab-missing_store">
+                    <p class="modal-sub">Know a store that's missing from search results?</p>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="ms-store-name">Store name <span class="suggest-req">*</span></label>
+                        <input type="text" id="ms-store-name" class="suggest-input" placeholder="e.g. Freshii" maxlength="100">
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="ms-category">Spending category <span class="suggest-req">*</span></label>
+                        <select id="ms-category" class="suggest-input">
+                            <option value="">Select a category…</option>
+                        </select>
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="ms-notes">Notes <span class="suggest-opt">(optional)</span></label>
+                        <input type="text" id="ms-notes" class="suggest-input" placeholder="e.g. MCC code, location" maxlength="200">
+                    </div>
                 </div>
+
+                <!-- Tab: Wrong multiplier -->
+                <div class="suggest-panel" id="tab-wrong_multiplier">
+                    <p class="modal-sub">Spotted an incorrect earn rate for a card?</p>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="wm-card">Card name <span class="suggest-req">*</span></label>
+                        <select id="wm-card" class="suggest-input">
+                            <option value="">Select a card…</option>
+                        </select>
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="wm-category">Category <span class="suggest-req">*</span></label>
+                        <select id="wm-category" class="suggest-input">
+                            <option value="">Select a category…</option>
+                        </select>
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="wm-correct-rate">Correct rate <span class="suggest-req">*</span></label>
+                        <input type="number" id="wm-correct-rate" class="suggest-input" placeholder="e.g. 3" min="0.1" max="20" step="0.25">
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="wm-source">Source <span class="suggest-opt">(optional)</span></label>
+                        <input type="text" id="wm-source" class="suggest-input" placeholder="e.g. td.com/card-benefits" maxlength="200">
+                    </div>
+                </div>
+
+                <!-- Tab: New card -->
+                <div class="suggest-panel" id="tab-new_card">
+                    <p class="modal-sub">Know a Canadian card that should be added?</p>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="nc-card-name">Card name <span class="suggest-req">*</span></label>
+                        <input type="text" id="nc-card-name" class="suggest-input" placeholder="e.g. CIBC Aeroplan Visa Infinite" maxlength="100">
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="nc-issuer">Issuer <span class="suggest-opt">(optional)</span></label>
+                        <input type="text" id="nc-issuer" class="suggest-input" placeholder="e.g. CIBC" maxlength="60">
+                    </div>
+                    <div class="suggest-field">
+                        <label class="suggest-label" for="nc-notes">Key earn rates <span class="suggest-opt">(optional)</span></label>
+                        <input type="text" id="nc-notes" class="suggest-input" placeholder="e.g. 3x groceries, 1.5x gas" maxlength="200">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer suggest-footer">
+                <p class="suggest-status" id="suggest-status"></p>
+                <button class="btn-primary" id="suggest-submit-btn">Submit</button>
             </div>
         </div>
     </div>
