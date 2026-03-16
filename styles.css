@@ -1344,3 +1344,33 @@ select.suggest-input {
     border-top: none;
     animation: fadeUp .25s ease both;
 }
+
+/* ── Best card wrapper — connects card + explanation as one unit ─────────── */
+.result-card-best-wrapper {
+    border: 1.5px solid var(--green);
+    border-radius: var(--radius-md);
+    overflow: hidden;           /* clips children so they share the border-radius */
+    margin-bottom: 6px;
+}
+
+/* When inside the wrapper, the card inherits border from wrapper — remove its own */
+.result-card-best-wrapper .result-card--best {
+    border: none;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+/* Explanation inside wrapper: sits flush below the card row */
+.result-card-best-wrapper .result-explanation {
+    border: none;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    margin: 0;
+    padding: 8px 14px 10px;
+    background: var(--bg-elevated);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    animation: fadeUp .25s ease both;
+}

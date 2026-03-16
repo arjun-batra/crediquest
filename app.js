@@ -244,17 +244,21 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.textContent = 'Submitting…';
         statusEl.className = 'suggest-status';
 
-        const { error } = await sb.from('suggestions').insert({ type: activeTab, details });
+        const { data: result, error } = await sb.rpc('submit_suggestion', {
+            p_type:       activeTab,
+            p_details:    details,
+            p_session_id: SESSION_ID,
+        });
 
-        if (error) {
-            console.error('[CQ] suggestion submit:', error);
-            statusEl.textContent = 'Something went wrong — please try again.';
+        if (error || !result?.ok) {
+            const msg = result?.error || 'Something went wrong — please try again.';
+            console.error('[CQ] suggestion submit:', error || result?.error);
+            statusEl.textContent = msg;
             statusEl.className = 'suggest-status suggest-status--error';
             submitBtn.disabled = false;
         } else {
             statusEl.textContent = '✓ Thanks! We\'ll review your suggestion.';
             statusEl.className = 'suggest-status suggest-status--success';
-            // Clear the active form
             document.querySelectorAll('#contribute-modal input, #contribute-modal select')
                 .forEach(el => { el.value = el.tagName === 'SELECT' ? '' : ''; });
             logEvent('suggestion_submitted', { type: activeTab });
@@ -582,35 +586,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         displayData.forEach((card, i) => {
-            const el = document.createElement('div');
-            el.className = `result-card${i === 0 ? ' result-card--best' : ''}`;
-
-            const valueStr = showPerDollar
-                ? `${card.displayValue}¢`
-                : `${card.multiplier}×`;
-
-            // Show a small badge when a store-specific override is applied
-            const overrideBadge = card.storeOverride
-                ? `<span class="override-badge">store bonus</span>`
-                : '';
-
-            el.innerHTML = `
-                <span class="result-rank">${i === 0 ? '★' : `#${i + 1}`}</span>
-                <span class="result-name">${card.credit_cards.card_name}${overrideBadge}</span>
-                <span class="result-multiplier">${valueStr}</span>
-            `;
-            list.appendChild(el);
-
-            // Feature #6: explanation line for the #1 card only
-            // Shows which other categories this card earns the same top rate on,
-            // giving the user context about why it won and where else to use it.
             if (i === 0) {
+                // Wrap the best card + explanation together so they read as one unit
+                const wrapper = document.createElement('div');
+                wrapper.className = 'result-card-best-wrapper';
+
+                const el = document.createElement('div');
+                el.className = 'result-card result-card--best';
+
+                const valueStr = showPerDollar
+                    ? `${card.displayValue}¢`
+                    : `${card.multiplier}×`;
+
+                const overrideBadge = card.storeOverride
+                    ? `<span class="override-badge">store bonus</span>`
+                    : '';
+
+                el.innerHTML = `
+                    <span class="result-rank">★</span>
+                    <span class="result-name">${card.credit_cards.card_name}${overrideBadge}</span>
+                    <span class="result-multiplier">${valueStr}</span>
+                `;
+
                 const explanationEl = document.createElement('div');
                 explanationEl.className = 'result-explanation';
-                explanationEl.id = 'result-explanation';
-                explanationEl.textContent = ''; // filled async below
-                list.appendChild(explanationEl);
-                fetchTopCardExplanation(card.credit_card_id, card.multiplier, explanationEl);
+                explanationEl.textContent = '';
+
+                wrapper.appendChild(el);
+                wrapper.appendChild(explanationEl);
+                list.appendChild(wrapper);
+
+                // Pass current rewardTypeId so the searched category is excluded from the list
+                fetchTopCardExplanation(card.credit_card_id, card.multiplier, Number(rewardTypeId), explanationEl);
+            } else {
+                const el = document.createElement('div');
+                el.className = 'result-card';
+
+                const valueStr = showPerDollar
+                    ? `${card.displayValue}¢`
+                    : `${card.multiplier}×`;
+
+                const overrideBadge = card.storeOverride
+                    ? `<span class="override-badge">store bonus</span>`
+                    : '';
+
+                el.innerHTML = `
+                    <span class="result-rank">#${i + 1}</span>
+                    <span class="result-name">${card.credit_cards.card_name}${overrideBadge}</span>
+                    <span class="result-multiplier">${valueStr}</span>
+                `;
+                list.appendChild(el);
             }
         });
 
@@ -647,10 +672,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Top card explanation (Feature #6) ────────────────────────────────
-    // Fetches all categories where the #1 card earns its top multiplier,
-    // then renders a compact "Also earns Nx on X, Y, Z" line.
+    // Fetches categories where the #1 card earns its top multiplier,
+    // excluding the one already searched so the list is additive context.
     // Fire-and-forget: never blocks the results render.
-    async function fetchTopCardExplanation(cardId, topMultiplier, el) {
+    async function fetchTopCardExplanation(cardId, topMultiplier, currentRewardTypeId, el) {
         if (!cardId) return;
         try {
             const { data, error } = await sb
@@ -658,16 +683,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 .select('reward_type_id, multiplier, reward_types(reward_type)')
                 .eq('credit_card_id', cardId)
                 .eq('multiplier', topMultiplier)
+                .neq('reward_type_id', currentRewardTypeId)  // exclude the searched category
                 .order('reward_types(reward_type)');
-            if (error || !data || data.length === 0) return;
+            if (error || !data || data.length === 0) {
+                el.remove();
+                return;
+            }
 
-            // Build category list, excluding the one we already searched
             const cats = data
                 .map(r => r.reward_types?.reward_type)
                 .filter(Boolean);
 
-            if (cats.length <= 1) {
-                // Only earns this rate on the searched category — no extra info
+            if (cats.length === 0) {
                 el.remove();
                 return;
             }
@@ -675,7 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rateStr = `${topMultiplier}×`;
             el.textContent = `Also earns ${rateStr} on: ${cats.join(', ')}`;
         } catch (e) {
-            el.remove(); // silently hide if fetch fails
+            el.remove();
         }
     }
 
