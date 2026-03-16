@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             properties:  properties,
             session_id:  SESSION_ID,
             device_type: DEVICE_TYPE,
-            app_version: '0.6',
+            app_version: '1.0',
         }).then(({ error }) => {
             if (error) console.warn('[CQ] analytics drop:', eventName, error.message);
         });
