@@ -213,7 +213,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 <div id="gate">
     <div class="gate-box">
         <div class="gate-wordmark">
-            <div class="gate-wordmark-dot">C</div>
+            <img src="icon.png" alt="CrediQuest" style="width:28px;height:28px;border-radius:7px;object-fit:cover;" onerror="this.outerHTML='<div class=\'gate-wordmark-dot\'>C</div>'">
             <span class="gate-wordmark-text">CrediQuest</span>
         </div>
         <p class="gate-sub">Suggestions inbox</p>
@@ -233,7 +233,10 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
             <span class="topbar-title">Suggestions</span>
             <span class="topbar-badge" id="total-count">—</span>
         </div>
-        <a href="dashboard.html" class="topbar-link">← Analytics</a>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <a href="https://crediquest.arjunbatra.xyz/landing-dashboard.html" class="topbar-link">🌐 Landing</a>
+            <a href="dashboard.html" class="topbar-link">← Analytics</a>
+        </div>
     </div>
 
     <div class="content">
