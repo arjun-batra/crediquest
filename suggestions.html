@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrediQuest — Suggestions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:           #f4f6f8;
+    --bg-card:      #ffffff;
+    --bg-hover:     #f8fafc;
+    --border:       #e4e8ee;
+    --border-hi:    #cbd3de;
+    --green:        #5a9e1c;
+    --green-mid:    #7bc428;
+    --green-dim:    rgba(90,158,28,.09);
+    --blue:         #1a5ca8;
+    --blue-dim:     rgba(26,92,168,.09);
+    --orange:       #d9650e;
+    --orange-dim:   rgba(217,101,14,.09);
+    --text:         #0f172a;
+    --text-2:       #475569;
+    --text-3:       #94a3b8;
+    --sans:         'Plus Jakarta Sans', sans-serif;
+    --mono:         'JetBrains Mono', monospace;
+    --r-sm:         8px;
+    --r-md:         12px;
+    --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:    0 4px 12px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04);
+}
+
+html { -webkit-font-smoothing: antialiased; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+/* ── Password gate ──────────────────────────────────────────────────────────── */
+#gate {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.gate-box {
+    width: 100%; max-width: 400px;
+    padding: 48px 40px 40px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; box-shadow: var(--shadow-md);
+    animation: fadeUp .3s ease both;
+}
+.gate-wordmark { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 6px; }
+.gate-wordmark-dot {
+    width: 28px; height: 28px; background: var(--green-mid); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #fff;
+}
+.gate-wordmark-text { font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -.02em; }
+.gate-sub { text-align: center; font-size: 13px; color: var(--text-2); margin-bottom: 32px; }
+.gate-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-2); margin-bottom: 6px; letter-spacing: .04em; text-transform: uppercase; }
+.gate-input {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: var(--r-sm);
+    font-family: var(--mono); font-size: 14px; color: var(--text);
+    background: var(--bg); outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.gate-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-dim); }
+.gate-btn {
+    width: 100%; margin-top: 16px; padding: 12px;
+    background: var(--green); color: #fff; border: none; border-radius: var(--r-sm);
+    font-family: var(--sans); font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: background .15s;
+}
+.gate-btn:hover { background: var(--green-mid); }
+.gate-error { margin-top: 10px; font-size: 12px; font-weight: 600; color: #dc2626; display: none; text-align: center; }
+
+/* ── App shell ──────────────────────────────────────────────────────────────── */
+#app { display: none; }
+#app.visible { display: block; }
+
+.topbar {
+    background: var(--bg-card); border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-dot {
+    width: 24px; height: 24px; background: var(--green-mid); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff;
+}
+.topbar-title { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -.02em; }
+.topbar-badge {
+    font-size: 11px; font-weight: 700; padding: 2px 8px;
+    background: var(--orange-dim); color: var(--orange);
+    border: 1px solid rgba(217,101,14,.2); border-radius: 20px;
+    font-family: var(--mono);
+}
+.topbar-link {
+    font-size: 12px; font-weight: 600; color: var(--text-2);
+    text-decoration: none; padding: 6px 12px;
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    transition: border-color .15s, color .15s;
+}
+.topbar-link:hover { border-color: var(--border-hi); color: var(--text); }
+
+.content { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+/* ── Filter bar ─────────────────────────────────────────────────────────────── */
+.filter-bar {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; margin-bottom: 24px;
+}
+.filter-count {
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+    margin-left: auto;
+    font-family: var(--mono);
+}
+.filter-btn {
+    padding: 6px 14px;
+    background: var(--bg-card); border: 1.5px solid var(--border);
+    border-radius: 20px; font-family: var(--sans);
+    font-size: 12px; font-weight: 700; color: var(--text-2);
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--border-hi); color: var(--text); }
+.filter-btn.active { background: var(--text); border-color: var(--text); color: #fff; }
+.filter-btn.active.type-store    { background: var(--green);  border-color: var(--green);  }
+.filter-btn.active.type-rate     { background: var(--blue);   border-color: var(--blue);   }
+.filter-btn.active.type-card     { background: var(--orange); border-color: var(--orange); }
+
+/* ── Suggestion card ─────────────────────────────────────────────────────────── */
+.suggestion-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--r-md); margin-bottom: 10px;
+    overflow: hidden; box-shadow: var(--shadow-sm);
+    animation: fadeUp .2s ease both;
+}
+.suggestion-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px 12px;
+}
+.suggestion-type-pill {
+    flex-shrink: 0; padding: 3px 10px;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+    letter-spacing: .02em; text-transform: uppercase;
+}
+.type-missing_store    { background: var(--green-dim);  color: var(--green);  }
+.type-wrong_multiplier { background: var(--blue-dim);   color: var(--blue);   }
+.type-new_card         { background: var(--orange-dim); color: var(--orange); }
+
+.suggestion-title {
+    flex: 1; font-size: 14px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.suggestion-time {
+    flex-shrink: 0; font-family: var(--mono); font-size: 11px;
+    color: var(--text-3); white-space: nowrap;
+}
+.suggestion-body {
+    padding: 0 18px 14px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+}
+.suggestion-field {
+    display: flex; gap: 5px; align-items: baseline;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; max-width: 100%;
+}
+.field-label { font-weight: 700; color: var(--text-3); flex-shrink: 0; }
+.field-value { color: var(--text); word-break: break-word; }
+.field-value:empty::after { content: '—'; color: var(--text-3); }
+
+/* ── Empty / loading ─────────────────────────────────────────────────────────── */
+.empty-state {
+    text-align: center; padding: 64px 24px;
+    color: var(--text-3); font-size: 14px; font-weight: 500;
+}
+.empty-state .emoji { font-size: 32px; margin-bottom: 12px; }
+
+.shimmer-card {
+    height: 80px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: var(--r-md);
+    margin-bottom: 10px; overflow: hidden; position: relative;
+}
+.shimmer-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.04) 50%, transparent 100%);
+    background-size: 400px 100%; animation: shimmer 1.5s infinite;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+    from { background-position: -400px 0; }
+    to   { background-position: 400px 0; }
+}
+@keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-6px); }
+    75%      { transform: translateX(6px); }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Password gate ───────────────────────────────────────────────────────── -->
+<div id="gate">
+    <div class="gate-box">
+        <div class="gate-wordmark">
+            <div class="gate-wordmark-dot">C</div>
+            <span class="gate-wordmark-text">CrediQuest</span>
+        </div>
+        <p class="gate-sub">Suggestions inbox</p>
+        <label class="gate-label" for="password">Password</label>
+        <input type="password" id="password" class="gate-input" placeholder="Enter password" autocomplete="current-password">
+        <button id="pw-btn" class="gate-btn">Unlock</button>
+        <p id="pw-error" class="gate-error">Incorrect password.</p>
+    </div>
+</div>
+
+<!-- ── App ────────────────────────────────────────────────────────────────── -->
+<div id="app">
+
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="topbar-dot">C</div>
+            <span class="topbar-title">Suggestions</span>
+            <span class="topbar-badge" id="total-count">—</span>
+        </div>
+        <a href="dashboard.html" class="topbar-link">← Analytics</a>
+    </div>
+
+    <div class="content">
+
+        <div class="filter-bar">
+            <button class="filter-btn active" data-type="all">All</button>
+            <button class="filter-btn type-store" data-type="missing_store">Missing store</button>
+            <button class="filter-btn type-rate"  data-type="wrong_multiplier">Wrong rate</button>
+            <button class="filter-btn type-card"  data-type="new_card">New card</button>
+            <span class="filter-count" id="filter-count"></span>
+        </div>
+
+        <div id="suggestions-list">
+            <!-- Shimmer placeholders while loading -->
+            <div class="shimmer-card"></div>
+            <div class="shimmer-card"></div>
+            <div class="shimmer-card"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL  = 'https://yaqarscylnpmmbllfwxw.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhcWFyc2N5bG5wbW1ibGxmd3h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzOTQ5MDIsImV4cCI6MjA0Nzk3MDkwMn0.KuYXx8b-5MKDLmW6DfoG5lyMZPwFMROlbnDC-vJZDd8';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let allSuggestions = [];
+let activeFilter   = 'all';
+
+// ── Type config ───────────────────────────────────────────────────────────────
+const TYPE_LABELS = {
+    missing_store:    'Missing store',
+    wrong_multiplier: 'Wrong rate',
+    new_card:         'New card',
+};
+
+// Fields to display per type (label → details key)
+const TYPE_FIELDS = {
+    missing_store: [
+        { label: 'Store',    key: 'store_name' },
+        { label: 'Category', key: 'category'   },
+        { label: 'Notes',    key: 'notes'       },
+    ],
+    wrong_multiplier: [
+        { label: 'Card',          key: 'card_name'    },
+        { label: 'Category',      key: 'category'     },
+        { label: 'Correct rate',  key: 'correct_rate' },
+        { label: 'Source',        key: 'source'       },
+    ],
+    new_card: [
+        { label: 'Card',       key: 'card_name' },
+        { label: 'Issuer',     key: 'issuer'    },
+        { label: 'Earn rates', key: 'notes'     },
+    ],
+};
+
+// ── Time format ───────────────────────────────────────────────────────────────
+function fmtTime(iso) {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 1000);
+    if (diff < 60)   return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    const days = Math.floor(diff / 86400);
+    if (days < 7) return `${days}d ago`;
+    return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+    const list = document.getElementById('suggestions-list');
+    const filtered = activeFilter === 'all'
+        ? allSuggestions
+        : allSuggestions.filter(s => s.type === activeFilter);
+
+    document.getElementById('filter-count').textContent =
+        filtered.length === allSuggestions.length
+            ? `${allSuggestions.length} total`
+            : `${filtered.length} of ${allSuggestions.length}`;
+
+    if (filtered.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="emoji">📭</div>
+                No suggestions yet.
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = filtered.map((s, i) => {
+        const fields = TYPE_FIELDS[s.type] || [];
+        const fieldsHtml = fields.map(f => {
+            const val = s.details[f.key];
+            if (!val && val !== 0) return '';
+            return `
+                <div class="suggestion-field">
+                    <span class="field-label">${f.label}</span>
+                    <span class="field-value">${val}</span>
+                </div>`;
+        }).join('');
+
+        // Derive card title from details
+        const title = s.details.store_name || s.details.card_name ||
+                      `Suggestion #${s.id}`;
+
+        return `
+            <div class="suggestion-card" style="animation-delay:${i * 0.03}s">
+                <div class="suggestion-header">
+                    <span class="suggestion-type-pill type-${s.type}">
+                        ${TYPE_LABELS[s.type] || s.type}
+                    </span>
+                    <span class="suggestion-title" title="${title}">${title}</span>
+                    <span class="suggestion-time">${fmtTime(s.created_at)}</span>
+                </div>
+                ${fieldsHtml ? `<div class="suggestion-body">${fieldsHtml}</div>` : ''}
+            </div>`;
+    }).join('');
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function loadSuggestions() {
+    const { data, error } = await sb.rpc('get_suggestions', { filter_type: null });
+    if (error || !data) {
+        document.getElementById('suggestions-list').innerHTML =
+            '<div class="empty-state"><div class="emoji">⚠️</div>Failed to load — refresh to retry.</div>';
+        return;
+    }
+    allSuggestions = data;
+    document.getElementById('total-count').textContent = data.length;
+    render();
+}
+
+// ── Filter buttons ────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.type;
+        render();
+    });
+});
+
+// ── Password gate ─────────────────────────────────────────────────────────────
+// Same hash as dashboard.html — "crediquest2025"
+// To change: echo -n "newpassword" | sha256sum → update both files
+const PW_HASH = 'b9e8a4b2a66942e36df89b44041ea2e0ec3f536ced01c2919af65986d4f8a3c7';
+
+async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function unlock() {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    loadSuggestions();
+}
+
+if (sessionStorage.getItem('cq_dash_unlocked') === '1') {
+    unlock();
+} else {
+    const pwInput = document.getElementById('password');
+    const pwError = document.getElementById('pw-error');
+    const pwBtn   = document.getElementById('pw-btn');
+
+    async function attemptUnlock() {
+        const hash = await sha256(pwInput.value);
+        if (hash === PW_HASH) {
+            sessionStorage.setItem('cq_dash_unlocked', '1');
+            unlock();
+        } else {
+            pwError.style.display = 'block';
+            pwInput.value = '';
+            pwInput.focus();
+            pwInput.style.animation = 'none';
+            pwInput.offsetHeight;
+            pwInput.style.animation = 'shake .35s ease';
+            setTimeout(() => { pwError.style.display = 'none'; }, 3000);
+        }
+    }
+
+    pwBtn.addEventListener('click', attemptUnlock);
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); attemptUnlock(); } });
+}
+</script>
+</body>
+</html>
