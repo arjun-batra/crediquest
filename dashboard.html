@@ -191,7 +191,7 @@ body {
     font-size: 13px; color: var(--text-2); font-weight: 500;
 }
 
-.topbar-right { display: flex; align-items: center; gap: 8px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
 
 .live-badge {
     display: flex; align-items: center; gap: 5px;
@@ -464,8 +464,35 @@ body {
     .topbar-divider, .topbar-sub { display: none; }
 }
 
-@media (max-width: 540px) {
+@media (max-width: 700px) {
+    /* Stack topbar into two rows on mobile */
+    .topbar {
+        height: auto;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        gap: 8px;
+    }
+    .topbar-brand { flex: 1 1 auto; }
+    .topbar-right {
+        flex: 0 0 100%;          /* second row — full width */
+        justify-content: space-between;
+        gap: 6px;
+    }
+    /* Hide nav link text labels, keep emoji icons */
+    .topbar-right a .nav-label { display: none; }
+    .live-badge span:not(.live-dot) { display: none; } /* hide "Live" text */
+    .live-badge { padding: 4px 8px; }
+    /* Shrink period buttons */
+    .period-btn { padding: 5px 10px; font-size: 11px; }
+}
+
+@media (max-width: 420px) {
+    .period-btn { padding: 5px 7px; font-size: 10px; }
     .kpi-row { grid-template-columns: 1fr 1fr; }
+    .kpi-value { font-size: 26px; }
+}
+
+@media (max-width: 540px) {
     .kpi-value { font-size: 26px; }
 }
 </style>
@@ -476,7 +503,7 @@ body {
 <div id="gate">
     <div class="gate-box">
         <div class="gate-wordmark">
-            <img src="icon.png" alt="CrediQuest" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<div class=\'gate-wordmark-dot\'>CQ</div>'">
+            <img src="icon.png" alt="CrediQuest" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<div class=&quot;gate-wordmark-dot&quot;>CQ</div>'">
             <span class="gate-wordmark-text">CrediQuest</span>
         </div>
         <p class="gate-sub">Sign in to view analytics</p>
@@ -505,14 +532,14 @@ body {
 
     <nav class="topbar">
         <div class="topbar-brand">
-            <img src="icon.png" alt="CrediQuest" style="width:26px;height:26px;border-radius:6px;object-fit:cover;" onerror="this.outerHTML='<div class=\'topbar-dot\'>CQ</div>'">
+            <img src="icon.png" alt="CrediQuest" style="width:26px;height:26px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.outerHTML='<div class=&quot;topbar-dot&quot;>CQ</div>'">
             <span class="topbar-title">CrediQuest</span>
             <div class="topbar-divider"></div>
             <span class="topbar-sub">Analytics</span>
         </div>
         <div class="topbar-right">
-            <a href="https://crediquest.arjunbatra.xyz/landing-dashboard.html" style="font-size:12px;font-weight:600;color:var(--text-2);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:var(--r-sm);transition:all .15s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border-hi)'" onmouseout="this.style.color='var(--text-2)';this.style.borderColor='var(--border)'">🌐 Landing</a>
-            <a href="suggestions.html" style="font-size:12px;font-weight:600;color:var(--text-2);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:var(--r-sm);transition:all .15s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border-hi)'" onmouseout="this.style.color='var(--text-2)';this.style.borderColor='var(--border)'">Suggestions →</a>
+            <a href="https://crediquest.arjunbatra.xyz/landing-dashboard.html" style="font-size:12px;font-weight:600;color:var(--text-2);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:var(--r-sm);transition:all .15s;white-space:nowrap;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border-hi)'" onmouseout="this.style.color='var(--text-2)';this.style.borderColor='var(--border)'">🌐 <span class="nav-label">Landing</span></a>
+            <a href="suggestions.html" style="font-size:12px;font-weight:600;color:var(--text-2);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:var(--r-sm);transition:all .15s;white-space:nowrap;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border-hi)'" onmouseout="this.style.color='var(--text-2)';this.style.borderColor='var(--border)'">💌 <span class="nav-label">Suggestions</span></a>
             <div class="live-badge">
                 <div class="live-dot"></div>
                 Live

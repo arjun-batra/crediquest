@@ -205,6 +205,27 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
     25%      { transform: translateX(-6px); }
     75%      { transform: translateX(6px); }
 }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+    .topbar {
+        height: auto;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        gap: 8px;
+    }
+    .topbar-left { flex: 1 1 auto; }
+    .topbar-right-links {
+        flex: 0 0 auto;
+    }
+    /* Hide link text labels, keep icons */
+    .topbar-link .nav-label { display: none; }
+}
+
+@media (max-width: 540px) {
+    .content { padding: 20px 16px; }
+    .topbar { padding: 10px 16px; }
+}
 </style>
 </head>
 <body>
@@ -213,7 +234,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 <div id="gate">
     <div class="gate-box">
         <div class="gate-wordmark">
-            <img src="icon.png" alt="CrediQuest" style="width:28px;height:28px;border-radius:7px;object-fit:cover;" onerror="this.outerHTML='<div class=\'gate-wordmark-dot\'>C</div>'">
+            <img src="icon.png" alt="CrediQuest" style="width:28px;height:28px;border-radius:7px;object-fit:cover;" onerror="this.outerHTML='<div class=&quot;gate-wordmark-dot&quot;>C</div>'">
             <span class="gate-wordmark-text">CrediQuest</span>
         </div>
         <p class="gate-sub">Suggestions inbox</p>
@@ -229,13 +250,13 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 
     <div class="topbar">
         <div class="topbar-left">
-            <div class="topbar-dot">C</div>
+            <img src="icon.png" alt="CrediQuest" style="width:24px;height:24px;border-radius:6px;object-fit:cover;flex-shrink:0;" onerror="this.outerHTML='<div class=&quot;topbar-dot&quot;>C</div>'">
             <span class="topbar-title">Suggestions</span>
             <span class="topbar-badge" id="total-count">—</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-            <a href="https://crediquest.arjunbatra.xyz/landing-dashboard.html" class="topbar-link">🌐 Landing</a>
-            <a href="dashboard.html" class="topbar-link">← Analytics</a>
+        <div class="topbar-right-links" style="display:flex;align-items:center;gap:8px;">
+            <a href="https://crediquest.arjunbatra.xyz/landing-dashboard.html" class="topbar-link">🌐 <span class="nav-label">Landing</span></a>
+            <a href="dashboard.html" class="topbar-link">📱 <span class="nav-label">Analytics</span></a>
         </div>
     </div>
 
