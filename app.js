@@ -66,6 +66,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // lastResultsData: cached for re-rendering on toggle without re-fetching
     let lastResultsData = null;
     let lastRewardTypeId = null;
+    // lastNetworkNotice: set when results are filtered by store network restriction
+    let lastNetworkNotice = null;
+
+    // ── Network restriction constants ─────────────────────────────────────
+    // IDs of cards that are Mastercards — used to filter results at
+    // Mastercard-only merchants (e.g. Costco).
+    const MASTERCARD_CARD_IDS = new Set(['3', '5', '7', '9', '13', '16', '20']);
+
+    // Returns the subset of selectedCardIds eligible for a given network.
+    // acceptedNetworks: null (all) | 'mastercard'
+    function getEligibleCardIds(acceptedNetworks) {
+        if (!acceptedNetworks) return selectedCardIds;
+        if (acceptedNetworks === 'mastercard') {
+            return selectedCardIds.filter(id => MASTERCARD_CARD_IDS.has(id));
+        }
+        return selectedCardIds;
+    }
 
     // ── Tangerine constants ───────────────────────────────────────────────
     const TANGERINE_CARD_ID = '13';
@@ -527,15 +544,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Tangerine interception gate ───────────────────────────────────────
-    function doFetch(rewardTypeId, displayName, storeId = null) {
+    function doFetch(rewardTypeId, displayName, storeId = null, acceptedNetworks = null) {
         const tangerineSelected  = selectedCardIds.includes(TANGERINE_CARD_ID);
         const categoryIsEligible = TANGERINE_ELIGIBLE_IDS.has(Number(rewardTypeId));
         const catsAlreadySet     = getTangerineChosenCats().size >= 2;
         if (tangerineSelected && categoryIsEligible && !catsAlreadySet) {
-            openTangerinePicker(() => fetchCardRewards(rewardTypeId, displayName, storeId));
+            openTangerinePicker(() => fetchCardRewards(rewardTypeId, displayName, storeId, acceptedNetworks));
             return;
         }
-        fetchCardRewards(rewardTypeId, displayName, storeId);
+        fetchCardRewards(rewardTypeId, displayName, storeId, acceptedNetworks);
     }
 
     // ── Rewards dropdown ──────────────────────────────────────────────────
@@ -658,8 +675,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('tangerine-note-edit').addEventListener('click', () => {
                 const title = document.getElementById('results-title').textContent;
-                openTangerinePicker(() => fetchCardRewards(rewardTypeId, title));
+                openTangerinePicker(() => fetchCardRewards(rewardTypeId, title, null, lastNetworkNotice));
             });
+        }
+
+        // Network restriction notice (e.g. Mastercard-only at Costco)
+        if (lastNetworkNotice === 'mastercard') {
+            const networkNote = document.createElement('div');
+            networkNote.className = 'tangerine-note';
+            networkNote.innerHTML = `
+                <span class="tangerine-note-icon">💳</span>
+                <span class="tangerine-note-text">
+                    Costco only accepts <strong>Mastercard</strong> — showing your Mastercard cards only.
+                </span>
+            `;
+            list.appendChild(networkNote);
         }
 
         // Per-dollar footnote explaining the valuation
@@ -727,11 +757,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // storeId: when a specific store was selected (not category dropdown),
     // we also fetch store-level overrides and apply them on top of the
     // category rate. Override wins. Re-sorts after merge.
-    async function fetchCardRewards(rewardTypeId, displayName, storeId = null) {
+    async function fetchCardRewards(rewardTypeId, displayName, storeId = null, acceptedNetworks = null) {
         if (selectedCardIds.length === 0) {
             showResults(displayName, [], rewardTypeId);
             return;
         }
+
+        // Filter card IDs by network restriction (e.g. Mastercard-only at Costco)
+        const eligibleCardIds = getEligibleCardIds(acceptedNetworks);
+        const networkFiltered = eligibleCardIds.length < selectedCardIds.length;
+        lastNetworkNotice = networkFiltered ? acceptedNetworks : null;
+
+        if (eligibleCardIds.length === 0) {
+            lastNetworkNotice = acceptedNetworks;
+            showResults(displayName, [], rewardTypeId);
+            return;
+        }
+
         setLoading(true);
         try {
             // Always fetch category rates. Include credit_card_id so we can
@@ -739,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data, error } = await sb
                 .from('credit_card_reward_types')
                 .select('credit_card_id, multiplier, credit_cards(card_name)')
-                .in('credit_card_id', selectedCardIds)
+                .in('credit_card_id', eligibleCardIds)
                 .eq('reward_type_id', Number(rewardTypeId))
                 .order('multiplier', { ascending: false });
             if (error) throw error;
@@ -752,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .from('credit_card_store_overrides')
                     .select('credit_card_id, multiplier')
                     .eq('store_id', storeId)
-                    .in('credit_card_id', selectedCardIds);
+                    .in('credit_card_id', eligibleCardIds);
 
                 if (!overrideError && overrideRows && overrideRows.length > 0) {
                     // Build lookup: card_id → override multiplier
@@ -803,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const { data: stores, error } = await sb
                 .from('stores')
-                .select('id, store_name, reward_type_id')
+                .select('id, store_name, reward_type_id, accepted_networks')
                 .ilike('store_name', `%${storeName}%`)
                 .limit(50);
             if (error) throw error;
@@ -815,7 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (stores.length === 1) {
                 logEvent('search', { method: 'store', query: storeName, result_count: 1, store_name: stores[0].store_name });
-                doFetch(stores[0].reward_type_id, stores[0].store_name, stores[0].id);
+                doFetch(stores[0].reward_type_id, stores[0].store_name, stores[0].id, stores[0].accepted_networks);
                 return;
             }
 
@@ -841,7 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 chip.addEventListener('click', () => {
                     closeAll();
                     logEvent('store_selected', { store_name: store.store_name, reward_type_id: store.reward_type_id });
-                    doFetch(store.reward_type_id, store.store_name, store.id);
+                    doFetch(store.reward_type_id, store.store_name, store.id, store.accepted_networks);
                 });
                 chips.appendChild(chip);
             });

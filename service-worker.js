@@ -1,4 +1,4 @@
-const CACHE = 'crediquest-v1.0';
+const CACHE = 'crediquest-v1.0.1';
 const PRECACHE = [
     '/crediquest/',
     '/crediquest/index.html',
