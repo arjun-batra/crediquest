@@ -1,7 +1,10 @@
 // ── Service Worker ──────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('[CQ] SW registered'))
+    navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' })
+        .then(reg => {
+            console.log('[CQ] SW registered');
+            reg.update(); // proactively check for updates on every page load
+        })
         .catch(e => console.warn('[CQ] SW failed:', e));
 }
 
