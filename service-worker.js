@@ -1,11 +1,11 @@
-const CACHE = 'crediquest-v1.0.1';
+const CACHE = 'crediquest-v1.0.2';
 const PRECACHE = [
-    '/crediquest/',
-    '/crediquest/index.html',
-    '/crediquest/styles.css',
-    '/crediquest/app.js',
-    '/crediquest/icons/icon-192x192.png',
-    '/crediquest/icons/icon-500x500.png'
+    '/',
+    '/index.html',
+    '/styles.css',
+    '/app.js',
+    '/icons/icon-192x192.png',
+    '/icons/icon-500x500.png'
 ];
 
 self.addEventListener('install', e => {

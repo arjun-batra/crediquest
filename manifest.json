@@ -2,7 +2,7 @@
     "name": "CrediQuest",
     "short_name": "CrediQuest",
     "description": "Find your highest-earning credit card for any store or category.",
-    "start_url": "/crediquest/index.html",
+    "start_url": "/index.html",
     "display": "standalone",
     "background_color": "#1a5ca8",
     "theme_color": "#1a5ca8",
