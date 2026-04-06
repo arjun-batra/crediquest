@@ -4,7 +4,7 @@
 
 CrediQuest is a Canadian credit card rewards optimizer — a PWA that answers one question at the point of purchase: which card in your wallet earns the most right now?
 
-🌐 **Live:** https://arjun-batra.github.io/crediquest/
+🌐 **Live:** https://crediquestapp.arjunbatra.xyz/
 
 ---
 
@@ -33,7 +33,7 @@ CrediQuest is a Canadian credit card rewards optimizer — a PWA that answers on
 
 Found a missing store, wrong earn rate, or a card that should be added? Use the **Contribute** button in the app to submit directly — no GitHub account needed.
 
-For code contributions, open an issue or PR at [github.com/arjun-batra/crediquest](https://github.com/arjun-batra/crediquest).
+For code contributions, open an issue or PR at [github.com/arjun-batra/crediquestapp](https://github.com/arjun-batra/crediquestapp).
 
 ---
 
