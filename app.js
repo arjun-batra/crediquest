@@ -46,6 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'desktop';
     })();
 
+    // IS_MOBILE_PHONE: true only for phone-sized devices (iPhone, Android phone).
+    // Distinct from DEVICE_TYPE because 'pwa' swallows all installed installs —
+    // an iPad PWA returns 'pwa', not 'tablet'. This flag checks the UA directly
+    // so we can correctly allow landscape on tablets regardless of install state.
+    const IS_MOBILE_PHONE = (() => {
+        const ua = navigator.userAgent.toLowerCase();
+        return /iphone|android/.test(ua) && !/ipad|tablet/.test(ua);
+    })();
+
     // logEvent: fire-and-forget, never throws, never blocks the UI.
     // All analytics calls use this — the rest of the app never awaits it.
     function logEvent(eventName, properties = {}) {
@@ -114,10 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectAllBtn   = document.getElementById('select-all-btn');
 
     // ── Orientation ───────────────────────────────────────────────────────
+    // Only block landscape on mobile phones (iPhone / Android phone).
+    // Tablets (browser or PWA) and desktops are free to rotate.
     const orientationEl = document.getElementById('orientation-warning');
     function checkOrientation() {
         orientationEl.classList.toggle('show',
-            !window.matchMedia('(orientation: portrait)').matches);
+            IS_MOBILE_PHONE && !window.matchMedia('(orientation: portrait)').matches);
     }
     window.addEventListener('orientationchange', checkOrientation);
     checkOrientation();
