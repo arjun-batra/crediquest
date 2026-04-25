@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             properties:  properties,
             session_id:  SESSION_ID,
             device_type: DEVICE_TYPE,
-            app_version: '1.0',
+            app_version: '1.0.3',
         }).then(({ error }) => {
             if (error) console.warn('[CQ] analytics drop:', eventName, error.message);
         });
@@ -369,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const badge = document.createElement('span');
                 badge.className = 'tangerine-settings-badge';
                 badge.id = 'tangerine-settings-badge';
-                // FIX: "bonus categories" (was "bonus cats")
                 badge.textContent = cats.size >= 2
                     ? `${cats.size} bonus categories`
                     : 'set bonus categories';
@@ -467,7 +466,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function updatePickerUI() {
             const count = selectedIds.size;
-            // FIX: "bonus categories" (was "bonus cats")
             countLbl.textContent = count === 0
                 ? 'Select 2 or 3 bonus categories'
                 : count === 1
@@ -944,14 +942,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
     // ── PWA Install Banner ────────────────────────────────────────────────────
-    // Strategy:
-    //   Android/Chrome  → intercept beforeinstallprompt, show banner with real
-    //                     Install button that calls deferredPrompt.prompt()
-    //   iOS/Safari      → detect platform + not-standalone, show instructional
-    //                     banner with Share icon steps (no programmatic install)
-    //   Already installed (standalone) → never show banner
-    //   Previously dismissed → never show banner again (localStorage flag)
-
     const INSTALL_DISMISSED_KEY = 'cq_install_dismissed';
     const INSTALL_DISMISS_DAYS  = 15;
 
@@ -961,14 +951,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const bannerSub     = document.getElementById('install-banner-sub');
     const iosSteps      = document.getElementById('install-banner-ios-steps');
 
-    let deferredPrompt = null; // holds the beforeinstallprompt event on Android
+    let deferredPrompt = null;
 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
                       || window.navigator.standalone === true;
     const isIOS        = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isAndroid    = /android/i.test(navigator.userAgent);
 
-    // Dismissed = a timestamp exists AND it's within the 15-day window
     function isDismissed() {
         const ts = localStorage.getItem(INSTALL_DISMISSED_KEY);
         if (!ts) return false;
@@ -983,13 +972,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function showBanner() {
         if (isDismissed() || isStandalone) return;
         bannerEl.hidden = false;
-        // Slide in after a short delay so it doesn't clash with page load
         setTimeout(() => bannerEl.classList.add('install-banner--visible'), 1500);
     }
 
     function hideBanner() {
         bannerEl.classList.remove('install-banner--visible');
-        setTimeout(() => { bannerEl.hidden = true; }, 350); // match CSS transition
+        setTimeout(() => { bannerEl.hidden = true; }, 350);
     }
 
     bannerDismiss.addEventListener('click', () => {
@@ -998,19 +986,16 @@ document.addEventListener('DOMContentLoaded', () => {
         logEvent('pwa_install_dismissed', { platform: isIOS ? 'ios' : 'android' });
     });
 
-    // ── Android / Chrome ──────────────────────────────────────────────────────
     window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();           // stop the automatic mini-infobar
+        e.preventDefault();
         deferredPrompt = e;
         logEvent('pwa_install_prompted', { platform: 'android' });
-
         bannerBtn.textContent = 'Install';
         showBanner();
     });
 
     bannerBtn.addEventListener('click', async () => {
         if (deferredPrompt) {
-            // Android: trigger the native install dialog
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             deferredPrompt = null;
@@ -1019,7 +1004,6 @@ document.addEventListener('DOMContentLoaded', () => {
             logEvent(outcome === 'accepted' ? 'pwa_installed' : 'pwa_install_dismissed',
                      { platform: 'android', outcome });
         }
-        // iOS: button is hidden, steps are shown instead — this won't fire
     });
 
     window.addEventListener('appinstalled', () => {
@@ -1028,11 +1012,9 @@ document.addEventListener('DOMContentLoaded', () => {
         logEvent('pwa_installed', { platform: 'android' });
     });
 
-    // ── iOS / Safari ──────────────────────────────────────────────────────────
-    // No programmatic install available. Show banner with manual steps.
     if (isIOS && !isStandalone && !isDismissed()) {
-        bannerBtn.hidden    = true;         // hide the Install button
-        iosSteps.hidden     = false;        // show step-by-step guide
+        bannerBtn.hidden    = true;
+        iosSteps.hidden     = false;
         bannerSub.textContent = 'Install in 2 taps';
         logEvent('pwa_install_prompted', { platform: 'ios' });
         showBanner();
