@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Network restriction constants ─────────────────────────────────────
     // IDs of cards that are Mastercards — used to filter results at
     // Mastercard-only merchants (e.g. Costco).
-    const MASTERCARD_CARD_IDS = new Set(['3', '5', '7', '9', '13', '16', '20']);
+    const MASTERCARD_CARD_IDS = new Set(['3', '5', '7', '9', '13', '16', '20', '21']);
 
     // Returns the subset of selectedCardIds eligible for a given network.
     // acceptedNetworks: null (all) | 'mastercard'
