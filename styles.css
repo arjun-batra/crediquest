@@ -1130,8 +1130,8 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--bg-card, #fff);
-    border: 1px solid var(--border, #e4e8ee);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 14px;
     padding: 12px 14px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, .12), 0 2px 8px rgba(0, 0, 0, .06);
@@ -1156,19 +1156,19 @@ body {
 .install-banner-text strong {
     font-size: 14px;
     font-weight: 700;
-    color: var(--text, #0f172a);
+    color: var(--text-primary);
     letter-spacing: -.01em;
 }
 
 .install-banner-text span {
     font-size: 12px;
-    color: var(--text-2, #475569);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
 .install-banner-btn {
     padding: 8px 16px;
-    background: var(--green, #5a9e1c);
+    background: var(--green);
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -1181,13 +1181,13 @@ body {
     transition: background .15s;
 }
 
-.install-banner-btn:hover { background: var(--green-mid, #7bc428); }
+.install-banner-btn:hover { background: var(--green-dark); }
 
 .install-banner-dismiss {
     background: transparent;
     border: none;
     cursor: pointer;
-    color: var(--text-3, #94a3b8);
+    color: var(--text-muted);
     padding: 4px;
     flex-shrink: 0;
     display: flex;
@@ -1196,17 +1196,17 @@ body {
     transition: color .15s;
 }
 
-.install-banner-dismiss:hover { color: var(--text, #0f172a); }
+.install-banner-dismiss:hover { color: var(--text-primary); }
 
 /* iOS instruction strip — sits below the main card */
 .install-banner-ios-steps {
-    background: var(--bg-elevated, #f8fafc);
-    border: 1px solid var(--border, #e4e8ee);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 9px 14px;
     font-size: 12px;
     font-weight: 500;
-    color: var(--text-2, #475569);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 5px;
@@ -1215,14 +1215,14 @@ body {
 }
 
 .install-banner-ios-steps strong {
-    color: var(--text, #0f172a);
+    color: var(--text-primary);
     font-weight: 700;
 }
 
 .install-banner-ios-steps svg {
     flex-shrink: 0;
     vertical-align: middle;
-    stroke: var(--blue, #1a5ca8);
+    stroke: var(--blue);
 }
 
 /* Dark mode support */
@@ -1248,7 +1248,7 @@ body {
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
-    font-family: var(--font-sans);
+    font-family: 'Nunito', sans-serif;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
@@ -1263,7 +1263,7 @@ body {
 }
 
 .suggest-tab:not(.active):hover {
-    border-color: var(--border-hi);
+    border-color: var(--border-mid);
     color: var(--text-primary);
 }
 
@@ -1291,7 +1291,7 @@ body {
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
-    font-family: var(--font-sans);
+    font-family: 'Nunito', sans-serif;
     font-size: 14px;
     outline: none;
     transition: border-color .15s, box-shadow .15s;
