@@ -50,9 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Distinct from DEVICE_TYPE because 'pwa' swallows all installed installs —
     // an iPad PWA returns 'pwa', not 'tablet'. This flag checks the UA directly
     // so we can correctly allow landscape on tablets regardless of install state.
+    //
+    // B6 (v1.0.4): Many Android tablet UAs don't include the literal string
+    // "tablet" (e.g. Galaxy Tab S5e returns "Linux; Android 10; SM-T720"), so
+    // a UA-only check would lock those devices to portrait. Combine the UA
+    // test with a screen-size guard — true tablets have a min dimension ≥ 600px.
     const IS_MOBILE_PHONE = (() => {
         const ua = navigator.userAgent.toLowerCase();
-        return /iphone|android/.test(ua) && !/ipad|tablet/.test(ua);
+        const uaPhone = /iphone|android/.test(ua) && !/ipad|tablet/.test(ua);
+        const w = window.screen?.width  || 0;
+        const h = window.screen?.height || 0;
+        const minDim = Math.min(w, h);
+        // If screen API unavailable (minDim === 0), fall back to UA-only result.
+        return uaPhone && (minDim === 0 || minDim < 600);
     })();
 
     // logEvent: fire-and-forget, never throws, never blocks the UI.
@@ -63,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             properties:  properties,
             session_id:  SESSION_ID,
             device_type: DEVICE_TYPE,
-            app_version: '1.0.3',
+            app_version: '1.0.4',
         }).then(({ error }) => {
             if (error) console.warn('[CQ] analytics drop:', eventName, error.message);
         });
@@ -181,7 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let contributeInitialised = false;
 
     function initContributeForm() {
-        if (contributeInitialised) return;
+        // B1 (v1.0.4): Don't initialize until creditCardsCache is populated,
+        // otherwise the card dropdown ends up empty and the init flag blocks
+        // re-init even after cards finally arrive. Re-tries on next open.
+        if (contributeInitialised || creditCardsCache.length === 0) return;
         contributeInitialised = true;
 
         // Populate card dropdowns from cache
@@ -269,6 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
             details = { card_name: name,
                         issuer: document.getElementById('nc-issuer').value.trim(),
                         notes:  document.getElementById('nc-notes').value.trim() };
+
+        } else {
+            // B8 (v1.0.4): Defensive guard — never submit with empty details
+            // if no tab is active (e.g. CSS class drift removed `.active`).
+            return;
         }
 
         submitBtn.disabled = true;
@@ -291,7 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
             statusEl.textContent = '✓ Thanks! We\'ll review your suggestion.';
             statusEl.className = 'suggest-status suggest-status--success';
             document.querySelectorAll('#contribute-modal input, #contribute-modal select')
-                .forEach(el => { el.value = el.tagName === 'SELECT' ? '' : ''; });
+                .forEach(el => { el.value = ''; });
+            // B7 (v1.0.4): Re-enable submit so a second suggestion can be sent
+            // without forcing a tab-switch or modal re-open.
+            submitBtn.disabled = false;
             logEvent('suggestion_submitted', { type: activeTab });
         }
     }
@@ -547,7 +568,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const chosenCats = getTangerineChosenCats();
         const isChosen   = chosenCats.has(Number(rewardTypeId));
         const adjusted = data.map(card => {
-            if (card.credit_cards.card_name === 'Tangerine Money-Back Credit Card') {
+            // B2 (v1.0.4): Match on credit_card_id (stable DB key) rather than
+            // card_name string — protects against silent breakage if the card
+            // is ever renamed in the DB.
+            if (String(card.credit_card_id) === TANGERINE_CARD_ID) {
                 return { ...card, multiplier: isChosen ? 2 : 0.5 };
             }
             return card;
@@ -573,7 +597,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .from('reward_types')
             .select('id, reward_type')
             .order('reward_type');
-        if (error) { console.error('[CQ] loadRewards:', error); return; }
+        if (error) {
+            console.error('[CQ] loadRewards:', error);
+            // B9 (v1.0.4): surface silent failures so we can see how often the
+            // category dropdown ends up empty in production.
+            logEvent('load_rewards_failed', { error: error.message || String(error) });
+            return;
+        }
         const frag = document.createDocumentFragment();
         data.forEach(r => {
             const opt = document.createElement('option');
@@ -771,6 +801,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // category rate. Override wins. Re-sorts after merge.
     async function fetchCardRewards(rewardTypeId, displayName, storeId = null, acceptedNetworks = null) {
         if (selectedCardIds.length === 0) {
+            // B5 (v1.0.4): Reset stale network notice from any prior search
+            // so we don't render "Costco accepts Mastercard only" on an
+            // unrelated empty result set.
+            lastNetworkNotice = null;
             showResults(displayName, [], rewardTypeId);
             return;
         }
@@ -937,6 +971,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (e) {
             console.error('[CQ] startup failed:', e);
+            // B4 (v1.0.4): log startup failures so DAU isn't undercounted and we
+            // get visibility on how often the app fails to load.
+            logEvent('app_load_failed', { error: e.message || String(e) });
             showError('Failed to load app data. Check your connection and refresh.');
         }
     })();
